@@ -110,60 +110,62 @@
 (defn run-saved-query [req]
   (log/debug "Trying to retrieve query" (-> req :params :id))
   (try+
-    (let [id (-> req :params :id)
-          query-ns (-> req :params :namespace)
-          rev (-> req :params :rev read-string)
-          headers (-> req :headers)
-          req-headers (into {"restql-query-control"   "saved"
-                              "restql-query-namespace" query-ns
-                              "restql-query-id"        id
-                              "restql-query-revision"  rev} (:headers req))
-          params (-> req :query-params keywordize-keys)
-          debugging (-> params (get :_debug false) boolean)
+   (let [id (-> req :params :id)
+         query-ns (-> req :params :namespace)
+         rev (-> req :params :rev read-string)
+         headers (-> req :headers)
+         req-headers (into {"restql-query-control"   "saved"
+                            "restql-query-namespace" query-ns
+                            "restql-query-id"        id
+                            "restql-query-revision"  rev} (:headers req))
+         params (-> req :query-params keywordize-keys)
+         debugging (-> params (get :_debug false) boolean)
 
           ; Retrieving tenant (env is always prioritized)
-          env-tenant (some-> env :tenant)
-          tenant (if (nil? env-tenant) (some-> params :tenant) env-tenant)
-          forward-params (if (nil? (:forward-prefix env))
-                            {}
-                            (into {} (filter (partial util/is-contextual? (:forward-prefix env)) params)))
-          opts {:debugging      debugging
-                :tenant         tenant
-                :forward-params forward-params
-                :info           {:type      :saved
-                                  :namespace query-ns
-                                  :id        id
-                                  :revision  rev}}
+         env-tenant (some-> env :tenant)
+         tenant (if (nil? env-tenant) (some-> params :tenant) env-tenant)
+         forward-params (if (nil? (:forward-prefix env))
+                          {}
+                          (into {} (filter (partial util/is-contextual? (:forward-prefix env)) params)))
+         opts {:debugging      debugging
+               :tenant         tenant
+               :forward-params forward-params
+               :info           {:type      :saved
+                                :namespace query-ns
+                                :id        id
+                                :revision  rev}}
 
-          query-entry (request-queries/get-query query-ns id rev)
-          context (into (:headers req) (:query-params req))
-          interpolated-query (util/parse query-entry context)
-          query (util/merge-headers req-headers interpolated-query)
-          time-before (System/currentTimeMillis)
-          [result-ch error-ch] (process-query query opts tenant)]
-      (log/debug "Query" query-ns "/" id "rev" rev "retrieved")
-      (m-stream/take!
-        (m-stream/->source
-          (go
-            (alt!
-              result-ch ([result]
-                          (log/debug {:time    (- (System/currentTimeMillis) time-before)
+         query-entry (request-queries/get-query query-ns id rev)
+         context (into (:headers req) (:query-params req))
+         interpolated-query (util/parse query-entry context)
+         query (util/merge-headers req-headers interpolated-query)
+         time-before (System/currentTimeMillis)
+         [result-ch error-ch] (process-query query opts tenant)]
+     (log/debug "Query" query-ns "/" id "rev" rev "retrieved")
+     (m-stream/take!
+      (m-stream/->source
+       (go
+         (alt!
+           result-ch ([result]
+                      (log/debug {:time    (- (System/currentTimeMillis) time-before)
                                   :success true}
-                                  "restQL Query finished")
-                          {:headers (make-headers interpolated-query result)
-                                    :status  (util/calculate-response-status-code result)
-                                    :body    (util/format-response-body result)})
-              error-ch ([err]
-                          (log/error {:time    (- (System/currentTimeMillis) time-before)
-                                  :success false}
+                                 "restQL Query finished")
+                      {:headers (make-headers interpolated-query result)
+                       :status  (util/calculate-response-status-code result)
+                       :body    (util/format-response-body result)})
+           error-ch ([err]
+                     (log/error {:time    (- (System/currentTimeMillis) time-before)
+                                 :success false}
                                 "restQL Query finished")
-                          err))))))
-    (catch [:type :validation-error] {:keys [message]}
-      (util/json-output 400 {:error "VALIDATION_ERROR" :message message}))
-    (catch [:type :parse-error] {:keys [line column]}
-      (util/json-output 400 {:error "PARSE_ERROR" :line line :column column}))
-    (catch Exception e (.printStackTrace e)
-      (util/json-output 400 {:error "UNKNOWN_ERROR" :message (.getMessage e)}))))
+                     err))))))
+   (catch [:type :validation-error] {:keys [message]}
+     (util/json-output 400 {:error "VALIDATION_ERROR" :message message}))
+   (catch [:type :parse-error] {:keys [line column]}
+     (util/json-output 400 {:error "PARSE_ERROR" :line line :column column}))
+   (catch [:type :query-not-found] e
+     (util/json-output 404 {:error "QUERY_NO_FOUND"}))
+   (catch Exception e (.printStackTrace e)
+          (util/json-output 400 {:error "UNKNOWN_ERROR" :message (.getMessage e)}))))
 
 (extend-protocol Renderable
   clojure.lang.IDeref
