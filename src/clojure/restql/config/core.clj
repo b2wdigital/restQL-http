@@ -28,7 +28,7 @@
   "Read the configuration yaml file from resources
   and store the parsed value into config-data"
   ([]
-    (init! "config.yml"))
+    (init! "restql.yml"))
   ([filename]
     (
       when (nil? @config-data)
