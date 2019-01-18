@@ -142,6 +142,7 @@
   (cond
     (nil? a) b
     (nil? b) a
+    (= 204 b) a
     (> a b) a
     :else b))
 
