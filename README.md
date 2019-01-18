@@ -13,7 +13,7 @@ from hero as heroList
 ```
 
 Links
-
+* [#restql](https://clojurians.slack.com/messages/C8S6EG8BF): [clojurians](https://clojurians.slack.com) restQL Slack channel
 * [@restQL](https://t.me/restQL): restQL Telegram Group
 * [@restQLBR](https://t.me/restQLBR): Brazilian restQL Telegram Group
 * [restql.b2w.io](http://restql.b2w.io): Project home page,
