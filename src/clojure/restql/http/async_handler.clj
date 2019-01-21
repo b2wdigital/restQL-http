@@ -70,10 +70,15 @@
           timeout-ch ([] (log/warn "request handler timed out") (>! error-ch {:status 500 :body "Request timed out"}))
           exception-ch ([err] (>! error-ch (util/error-output err)))
           query-ch ([result]
-                     (log/debug " finishing request handler")
-                     (>! result-ch {:body    (util/format-response-body result)
-                                    :headers (make-headers query-entry result)
-                                    :status  (util/calculate-response-status-code result)})))))
+                       (log/debug " finishing request handler")
+                       (if (nil? result)
+                         (do (>! result-ch {:body    nil
+                                            :headers nil
+                                            :status  500}))
+                         (do (>! result-ch {:body    (util/format-response-body result)
+                                            :headers (make-headers query-entry result)
+                                            :status  (util/calculate-response-status-code result)}))
+                       )))))
     (catch [:type :validation-error] {:keys [message]}
       (go (>! error-ch (util/json-output 400 {:error "VALIDATION_ERROR" :message message}))))
     (catch [:type :parse-error] {:keys [line column]}
@@ -149,13 +154,15 @@
            result-ch ([result]
                       (log/debug {:time    (- (System/currentTimeMillis) time-before)
                                   :success true}
-                                 "restQL Query finished")
-                      {:headers (make-headers interpolated-query result)
-                       :status  (util/calculate-response-status-code result)
-                       :body    (util/format-response-body result)})
-           error-ch ([err]
-                     (log/error {:time    (- (System/currentTimeMillis) time-before)
-                                 :success false}
+                                  "restQL Query finished")
+                                (if (nil? result)
+                                  {:headers nil :status 500 :body nil}
+                                  {:headers (make-headers interpolated-query result)
+                                   :status  (util/calculate-response-status-code result)
+                                   :body    (util/format-response-body result)}))
+              error-ch ([err]
+                          (log/error {:time    (- (System/currentTimeMillis) time-before)
+                                  :success false}
                                 "restQL Query finished")
                      err))))))
    (catch [:type :validation-error] {:keys [message]}
