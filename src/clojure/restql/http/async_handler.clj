@@ -72,12 +72,12 @@
           query-ch ([result]
                        (log/debug " finishing request handler")
                        (if (nil? result)
-                         (do (>! result-ch {:body    nil
-                                            :headers nil
-                                            :status  500}))
-                         (do (>! result-ch {:body    (util/format-response-body result)
-                                            :headers (make-headers query-entry result)
-                                            :status  (util/calculate-response-status-code result)}))
+                         (>! result-ch {:body    nil
+                                        :headers nil
+                                        :status  500})
+                         (>! result-ch {:body    (util/format-response-body result)
+                                        :headers (make-headers query-entry result)
+                                        :status  (util/calculate-response-status-code result)})
                        )))))
     (catch [:type :validation-error] {:keys [message]}
       (go (>! error-ch (util/json-output 400 {:error "VALIDATION_ERROR" :message message}))))
