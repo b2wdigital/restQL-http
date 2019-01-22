@@ -119,14 +119,13 @@
 
   (testing "Should return highers"
     (is (=
-          [503 200 404 422 200 408 200]
+          [503 200 404 422 200 408]
           [(higher-value 503 200)
            (higher-value 200 200)
            (higher-value 404 301)
            (higher-value 200 422)
            (higher-value nil 200)
-           (higher-value 408 nil)
-           (higher-value 200 204)]))))
+           (higher-value 408 nil)]))))
 
 
 (deftest test-map-values
