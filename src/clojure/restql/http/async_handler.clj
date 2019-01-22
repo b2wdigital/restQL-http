@@ -35,57 +35,57 @@
 
 (defn make-headers [interpolated-query result]
   (->
-    (response-headers/get-response-headers interpolated-query result)
-    (into {"Content-Type" "application/json"})
-    (stringify-keys)))
+   (response-headers/get-response-headers interpolated-query result)
+   (into {"Content-Type" "application/json"})
+   (stringify-keys)))
 
 (defn handle-request [req result-ch error-ch]
   (try+
-    (let [headers {"Content-Type" "application/json"}
-          req-headers (into {"restql-query-control" "ad-hoc"} (:headers req))
-          params (-> req :query-params keywordize-keys)
+   (let [headers {"Content-Type" "application/json"}
+         req-headers (into {"restql-query-control" "ad-hoc"} (:headers req))
+         params (-> req :query-params keywordize-keys)
 
           ; Retrieving tenant (env is always prioritized)
-          env-tenant (some-> env :tenant)
-          tenant (if (nil? env-tenant) (some-> params :tenant) env-tenant)
+         env-tenant (some-> env :tenant)
+         tenant (if (nil? env-tenant) (some-> params :tenant) env-tenant)
 
-          query-entry (util/parse-req req)
-          query (->> query-entry (util/merge-headers req-headers))
-          debugging (-> req :query-params (get "_debug") boolean)
+         query-entry (util/parse-req req)
+         query (->> query-entry (util/merge-headers req-headers))
+         debugging (-> req :query-params (get "_debug") boolean)
 
-          base-opts {:debugging debugging
-                     :tenant    tenant
-                     :info      {:type :ad-hoc}}
+         base-opts {:debugging debugging
+                    :tenant    tenant
+                    :info      {:type :ad-hoc}}
 
-          forward-params (if (nil? (:forward-prefix env))
-                           {}
-                           (into {} (filter (partial util/is-contextual? (:forward-prefix env)) params)))
-          opts (into {:forward-params forward-params} base-opts)
+         forward-params (if (nil? (:forward-prefix env))
+                          {}
+                          (into {} (filter (partial util/is-contextual? (:forward-prefix env)) params)))
+         opts (into {:forward-params forward-params} base-opts)
 
-          [query-ch exception-ch] (process-query query opts tenant)
+         [query-ch exception-ch] (process-query query opts tenant)
           timeout-ch (timeout (get-default :query-global-timeout))]
-      (log/debug "starting request handler")
-      (go
-        (alt!
-          timeout-ch ([] (log/warn "request handler timed out") (>! error-ch {:status 500 :body "Request timed out"}))
-          exception-ch ([err] (>! error-ch (util/error-output err)))
-          query-ch ([result]
-                     (log/debug " finishing request handler")
-                     (>! result-ch {:body    (util/format-response-body result)
-                                    :headers (make-headers query-entry result)
-                                    :status  (util/calculate-response-status-code result)})))))
-    (catch [:type :validation-error] {:keys [message]}
-      (go (>! error-ch (util/json-output 400 {:error "VALIDATION_ERROR" :message message}))))
-    (catch [:type :parse-error] {:keys [line column]}
-      (go (>! error-ch (util/json-output 400 {:error "PARSE_ERROR" :line line :column column}))))
-    (catch Exception e (.printStackTrace e)
-      (go (>! error-ch (util/json-output 400 {:error "UNKNOWN_ERROR" :message (.getMessage e)}))))))
+     (log/debug "starting request handler")
+     (go
+       (alt!
+         timeout-ch ([] (log/warn "request handler timed out") (>! error-ch {:status 500 :body "Request timed out"}))
+         exception-ch ([err] (>! error-ch (util/error-output err)))
+         query-ch ([result]
+                   (log/debug " finishing request handler")
+                   (>! result-ch {:body    (util/format-response-body result)
+                                  :headers (make-headers query-entry result)
+                                  :status  (util/calculate-response-status-code result)})))))
+   (catch [:type :validation-error] {:keys [message]}
+     (go (>! error-ch (util/json-output 400 {:error "VALIDATION_ERROR" :message message}))))
+   (catch [:type :parse-error] {:keys [line column]}
+     (go (>! error-ch (util/json-output 400 {:error "PARSE_ERROR" :line line :column column}))))
+   (catch Exception e (.printStackTrace e)
+          (go (>! error-ch (util/json-output 400 {:error "UNKNOWN_ERROR" :message (.getMessage e)}))))))
 
 (defn- parse-query [req]
   (try+
-    {:status 200 :body (util/parse-req req)}
-  (catch [:type :parse-error] {:keys [line column reason]}
-    {:status 400 :body (str "Parsing error in line " line ", column " column "\n" reason)})))
+   {:status 200 :body (util/parse-req req)}
+   (catch [:type :parse-error] {:keys [line column reason]}
+     {:status 400 :body (str "Parsing error in line " line ", column " column "\n" reason)})))
 
 (defn run-query [req]
   (let [time-before (System/currentTimeMillis)
@@ -93,19 +93,19 @@
         error-ch (chan)]
     (handle-request req result-ch error-ch)
     (m-stream/take!
-      (m-stream/->source
-        (go
-          (alt!
-            result-ch ([result]
-                        (log/debug {:time    (- (System/currentTimeMillis) time-before)
-                                :success true}
-                          "restQL Query finished")
-                        result)
-            error-ch ([err]
-                        (log/error {:time    (- (System/currentTimeMillis) time-before)
+     (m-stream/->source
+      (go
+        (alt!
+          result-ch ([result]
+                     (log/debug {:time    (- (System/currentTimeMillis) time-before)
+                                 :success true}
+                                "restQL Query finished")
+                     result)
+          error-ch ([err]
+                    (log/error {:time    (- (System/currentTimeMillis) time-before)
                                 :success false}
-                          "restQL Query finished")
-                        err)))))))
+                               "restQL Query finished")
+                    err)))))))
 
 (defn run-saved-query [req]
   (log/debug "Trying to retrieve query" (-> req :params :id))
@@ -157,7 +157,7 @@
                      (log/error {:time    (- (System/currentTimeMillis) time-before)
                                  :success false}
                                 "restQL Query finished")
-                     err))))))
+                     (util/error-output err)))))))
    (catch [:type :validation-error] {:keys [message]}
      (util/json-output 400 {:error "VALIDATION_ERROR" :message message}))
    (catch [:type :parse-error] {:keys [line column]}
@@ -171,8 +171,7 @@
   clojure.lang.IDeref
   (render [d _] (manifold.deferred/->deferred d))
   manifold.deferred.IDeferred
-  (render [d _] d)
-)
+  (render [d _] d))
 
 (c/defroutes
   routes
