@@ -75,8 +75,8 @@
   [query-response]
 
   (and
-    (not (nil? (:status query-response)))
-    (< (:status query-response) 300)))
+   (not (nil? (:status query-response)))
+   (< (:status query-response) 300)))
 
 (defn error-output
   "Creates an error output response from a given error"
@@ -118,11 +118,11 @@
   "Validates if a given request is valid"
   [req]
   (try+
-    (let [query (parse-req req)]
-      (if (validator/validate {:mappings env} query)
-        (json-output 200 "valid")))
-    (catch [:type :validation-error] {:keys [message]}
-      (json-output 400 message))))
+   (let [query (parse-req req)]
+     (if (validator/validate {:mappings env} query)
+       (json-output 200 "valid")))
+   (catch [:type :validation-error] {:keys [message]}
+     (json-output 400 message))))
 
 (defn should-ignore-errors
   "Searches for an ignore-errors meta on a given item
@@ -150,10 +150,10 @@
   [result]
 
   (let [statuses (as-> result x
-                       (vals x)
-                       (flatten x)
-                       (filter (complement should-ignore-errors) x)
-                       (map (comp :status :details) x))]
+                   (vals x)
+                   (flatten x)
+                   (filter (complement should-ignore-errors) x)
+                   (map (comp :status :details) x))]
     (reduce higher-value 200 statuses)))
 
 (defn map-values [f m]
@@ -162,26 +162,21 @@
 (defn format-response-details
   "Formats the response details"
   [details]
-  (dissoc details :headers)
-)
+  (if (sequential? details)
+    (map format-response-details details)
+    (dissoc details :headers)))
 
 (defn format-response-item
   "Formats a response item"
   [item]
-
-  (if (sequential? (:details item))
-    (assoc item :details (map format-response-details (:details item)))
-    (assoc item :details (format-response-details (:details item)))
-  )
-)
+  (assoc item :details (format-response-details (:details item))))
 
 (defn format-response-body
   "Formats the response body"
   [result]
-
   (as-> result x
-        (map-values format-response-item x)
-        (json/generate-string x)))
+    (map-values format-response-item x)
+    (json/generate-string x)))
 
 (defn is-contextual?
   "Filters if a given map key is contextual"
