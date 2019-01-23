@@ -39,6 +39,14 @@
    (into {"Content-Type" "application/json"})
    (stringify-keys)))
 
+(defn create-response [query result]
+  (try+
+   {:body    (util/format-response-body result)
+    :headers (make-headers query result)
+    :status  (util/calculate-response-status-code result)}
+   (catch Exception e (.printStackTrace e)
+     (util/error-output e))))
+
 (defn handle-request [req result-ch error-ch]
   (try+
    (let [headers {"Content-Type" "application/json"}
@@ -63,7 +71,7 @@
          opts (into {:forward-params forward-params} base-opts)
 
          [query-ch exception-ch] (process-query query opts tenant)
-          timeout-ch (timeout (get-default :query-global-timeout))]
+         timeout-ch (timeout (get-default :query-global-timeout))]
      (log/debug "starting request handler")
      (go
        (alt!
@@ -71,9 +79,7 @@
          exception-ch ([err] (>! error-ch (util/error-output err)))
          query-ch ([result]
                    (log/debug " finishing request handler")
-                   (>! result-ch {:body    (util/format-response-body result)
-                                  :headers (make-headers query-entry result)
-                                  :status  (util/calculate-response-status-code result)})))))
+                   (>! result-ch (create-response query-entry result))))))
    (catch [:type :validation-error] {:keys [message]}
      (go (>! error-ch (util/json-output 400 {:error "VALIDATION_ERROR" :message message}))))
    (catch [:type :parse-error] {:keys [line column]}
@@ -150,9 +156,8 @@
                       (log/debug {:time    (- (System/currentTimeMillis) time-before)
                                   :success true}
                                  "restQL Query finished")
-                      {:headers (make-headers interpolated-query result)
-                       :status  (util/calculate-response-status-code result)
-                       :body    (util/format-response-body result)})
+                      (create-response interpolated-query result))
+
            error-ch ([err]
                      (log/error {:time    (- (System/currentTimeMillis) time-before)
                                  :success false}
