@@ -2,6 +2,17 @@
   (:require [clojure.test :refer :all]
             [restql.http.request-util :refer :all]))
 
+(defn get-basic-result []
+  {:pudim {:details {:success false, :status 200, :headers nil, :metadata {}}, :result "oi eu sou um pudim"}})
+
+(defn get-status-zero-result []
+  {:banana {:details {:success true, :status 0, :headers nil, :metadata {}}, :result {:message "Internal error"}}
+   :pudim {:details {:success false, :status 200, :headers nil, :metadata {}}, :result "oi eu sou um pudim"}})
+
+(defn get-status-204-result []
+  {:banana {:details {:success true, :status 204, :headers nil, :metadata {}}, :result {}} 
+   :pudim {:details {:success false, :status 200, :headers nil, :metadata {}}, :result "oi eu sou um pudim"}})
+
 (deftest test-headers-blacklist
 
   (testing "Is blacklist filtering headers"
@@ -127,6 +138,37 @@
            (higher-value nil 200)
            (higher-value 408 nil)]))))
 
+(deftest correcting-statuses
+  (testing "Should return 200 when response is a status 204"
+    (is (=
+        200
+        (correct-status 204))))
+  
+  (testing "Should return 503 when response is a status 0"
+    (is (=
+        503
+        (correct-status 0))))
+  
+  (testing "Should return the same status when response is not a 0 nor a 204"
+    (is (=
+        404
+        (correct-status 404)))))
+
+(deftest calculating-response-status
+  (testing "Should return status 200 with basic result"
+    (is (=
+         200
+         (calculate-response-status-code (get-basic-result)))))
+  
+  (testing "Should return status 503 when result has status 0"
+    (is (=
+         503
+         (calculate-response-status-code (get-status-zero-result)))))
+  
+  (testing "Should return status 503 when result has status 0"
+    (is (=
+         200
+         (calculate-response-status-code (get-status-204-result))))))
 
 (deftest test-map-values
   (is (= {:foo 2 :bar 3}

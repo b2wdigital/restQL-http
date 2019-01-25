@@ -145,15 +145,22 @@
     (> a b) a
     :else b))
 
+(defn correct-status [num]
+  (cond
+    (= num 0) 503
+    (= num 204) 200
+    :else num))
+
 (defn calculate-response-status-code
   "Calculates the response status code of a given result"
   [result]
-
-  (let [statuses (as-> result x
-                   (vals x)
-                   (flatten x)
-                   (filter (complement should-ignore-errors) x)
-                   (map (comp :status :details) x))]
+  
+  (let [statuses (->> result
+                      (vals)
+                      (flatten)
+                      (filter (complement should-ignore-errors))
+                      (map (comp :status :details))
+                      (map #(correct-status %)))]
     (reduce higher-value 200 statuses)))
 
 (defn map-values [f m]
