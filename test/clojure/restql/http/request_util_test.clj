@@ -127,22 +127,6 @@
            (higher-value nil 200)
            (higher-value 408 nil)]))))
 
-(deftest correcting-statuses
-  (testing "Should return 200 when response is a status 204"
-    (is (=
-        200
-        (correct-status 204))))
-  
-  (testing "Should return 503 when response is a status 0"
-    (is (=
-        503
-        (correct-status 0))))
-  
-  (testing "Should return the same status when response is not a 0 nor a 204"
-    (is (=
-        404
-        (correct-status 404)))))
-
 (deftest calculating-response-status
   (testing "Should return higher status "
     (is (=
