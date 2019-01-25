@@ -133,8 +133,14 @@
          404
          (calculate-response-status-code {:hero {:details {:status 200}}
                                           :villain {:details {:status 404}}}))))
+
+  (testing "Should correct status 204 to 200 and return higher status"
+    (is (=
+         200
+         (calculate-response-status-code {:villain {:details {:status 204}}
+                                          :hero {:details {:status 200}}}))))
   
-  (testing "Should correct and return higher status"
+  (testing "Should correct status 0 to 503 and return higher status"
     (is (=
          503
          (calculate-response-status-code {:villain {:details {:status 0}}
