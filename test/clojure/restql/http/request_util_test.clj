@@ -147,19 +147,19 @@
   (testing "Should return status 200 with basic result"
     (is (=
          200
-         (calculate-response-status-code {:hero {:details {:success false, :status 200}, :result "I'm a hero"}}))))
+         (calculate-response-status-code {:hero {:details {:success false, :status 200}}}))))
   
-  (testing "Should return status 503 when result has status 0"
+  (testing "Should return status 503 when resource has status 0"
     (is (=
          503
-         (calculate-response-status-code {:banana {:details {:success true, :status 0}, :result {:message "Internal error"}}
-                                          :hero {:details {:success false, :status 200}, :result "I'm a hero"}}))))
+         (calculate-response-status-code {:banana {:details {:success true, :status 0}}
+                                          :hero {:details {:success false, :status 200}}}))))
   
-  (testing "Should return status 503 when result has status 0"
+  (testing "Should return status 200 when resource has status 204"
     (is (=
          200
-         (calculate-response-status-code {:banana {:details {:success true, :status 204}, :result {}}
-                                          :hero {:details {:success false, :status 200}, :result "I'm a hero"}})))))
+         (calculate-response-status-code {:banana {:details {:success true, :status 204}}
+                                          :hero {:details {:success false, :status 200}}})))))
 
 (deftest test-map-values
   (is (= {:foo 2 :bar 3}
