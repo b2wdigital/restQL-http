@@ -44,10 +44,23 @@
 
   (testing "Parse query should work for valid EDN"
     (is
-      (= [:foo {:from :foo :method :get} :bar {:from :bar :method :get}]
-         (parse "from foo\nfrom bar" {}))
-      (= [:foo {:from :foo :method :get} :bar {:from :bar :method :get}]
-         (parse "from foo\nfrom bar" {} true)))))
+     (= [:foo {:from :foo :method :get} :bar {:from :bar :method :get}]
+        (parse "from foo\nfrom bar" {}))
+     (= [:foo {:from :foo :method :get} :bar {:from :bar :method :get}]
+        (parse "from foo\nfrom bar" {} true))))
+    
+  (testing "Parse should call core cached function"
+    (let [called (atom false)]
+      (with-redefs [restql.parser.core/query-parser (fn [& _]
+                                                     (if (not @called)
+                                                       (do
+                                                         (reset! called true)
+                                                         {})
+                                                       {:message "Method called more than once"}))]
+        (is (= "[:foo {:from :foo, :method :get} :bar {:from :bar, :method :get}]\n"
+               (parse "from foo\nfrom bar" {} true)))
+        (is (= "[:foo {:from :foo, :method :get} :bar {:from :bar, :method :get}]\n"
+               (parse "from foo\nfrom bar" {} true)))))))
 
 (deftest extract-body-from-request
 
