@@ -144,22 +144,22 @@
         (correct-status 404)))))
 
 (deftest calculating-response-status
-  (testing "Should return status 200 with basic result"
+  (testing "Should return status 200 when resource has status 200 "
     (is (=
          200
-         (calculate-response-status-code {:hero {:details {:success false, :status 200}}}))))
+         (calculate-response-status-code {:hero {:details {:status 200}}}))))
   
   (testing "Should return status 503 when resource has status 0"
     (is (=
          503
-         (calculate-response-status-code {:banana {:details {:success true, :status 0}}
-                                          :hero {:details {:success false, :status 200}}}))))
+         (calculate-response-status-code {:villain {:details {:status 0}}
+                                          :hero {:details {:status 200}}}))))
   
   (testing "Should return status 200 when resource has status 204"
     (is (=
          200
-         (calculate-response-status-code {:banana {:details {:success true, :status 204}}
-                                          :hero {:details {:success false, :status 200}}})))))
+         (calculate-response-status-code {:villain {:details {:status 204}}
+                                          :hero {:details {:status 200}}})))))
 
 (deftest test-map-values
   (is (= {:foo 2 :bar 3}
