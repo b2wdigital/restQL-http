@@ -40,6 +40,7 @@
                              :cache-ttl "30000"}}
              :dev     {:env     {:port      "9000"
                                  :cache-ttl "30000"
+                                 :mappings-cache-ttl "60000"
                                  :cards     "http://api.magicthegathering.io/v1/cards"
                                  :card      "http://api.magicthegathering.io/v1/cards/:id"
                                  :planets   "https://swapi.co/api/planets/:id"}
