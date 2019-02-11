@@ -1,7 +1,6 @@
 (ns restql.http.cache
   (:require [clojure.tools.logging :as log]
             [slingshot.slingshot :refer [throw+]]
-            [clojure.core.cache :as cache]
             [environ.core :refer [env]]
             [clojure.core.memoize :as memo]))
 
@@ -12,7 +11,7 @@
    if not cached or returning the cached value"
   ([function]
 
-  (cached function DEFAULT_TTL))
+   (cached function DEFAULT_TTL))
 
   ([function ttl]
    (memo/ttl function {} :ttl/threshold ttl)))

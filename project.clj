@@ -18,7 +18,6 @@
                  [org.clojure/core.async "0.3.465"]
                  [org.clojure/java.classpath "0.2.3"]
                  [org.clojure/tools.reader "1.0.5"]
-                 [org.clojure/tools.reader "1.0.5"]
                  [org.mongodb/mongodb-driver "3.9.0"]
                  [org.clojure/tools.logging "0.4.1"]
                  [org.slf4j/slf4j-api "1.7.25"]

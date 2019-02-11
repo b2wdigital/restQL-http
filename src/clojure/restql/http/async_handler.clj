@@ -17,7 +17,6 @@
             [restql.http.request.queries :as request-queries]
             [restql.http.request-util :as util]
             [restql.http.database.core :as dbcore]
-            [restql.http.cache :as cache]
             [restql.http.exception-handler :refer [wrap-exception-handling]]
             [restql.http.plugin.core :as plugin]
             [restql.http.response :as resp]))
