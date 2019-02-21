@@ -3,7 +3,7 @@
             [clojure.tools.logging :as log]
             [restql.config.core :as config]
             [restql.http.database.core :as dbcore]
-            [restql.http.cache :as cache]))
+            [restql.http.cache.core :as cache]))
 
 (def MAPPINGS_TTL (if (contains? env :mappings-cache-ttl) (read-string (env :mappings-cache-ttl)) 60000))
 

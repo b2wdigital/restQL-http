@@ -21,4 +21,6 @@
     (with-redefs [config/get-config (fn [_] nil)
                   dbcore/find-query-by-id-and-revision (fn [_ _ _] nil)]
       (is (thrown+-with-msg? map? #"\{:type :query-not-found\}" (get-query-from-config "my-namespace" "my-query" 1)))
-      (is (thrown+-with-msg? map? #"\{:type :query-not-found\}" (get-query "my-namespace" "my-query" 1))))))
+      (is (thrown+-with-msg? map? #"\{:type :query-not-found\}" (get-query {:namespace "my-namespace"
+                                                                            :query "my-query"
+                                                                            :revision 1}))))))

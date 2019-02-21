@@ -3,8 +3,7 @@
             [environ.core :refer [env]]
             [clojure.edn :as edn]
             [restql.core.validator.core :as validator]
-            [slingshot.slingshot :refer [throw+]]
-            [restql.http.request-util :as util]))
+            [slingshot.slingshot :refer [throw+]]))
 
 ;re-exporting find-query
 (def find-query-by-id-and-revision db/find-query)

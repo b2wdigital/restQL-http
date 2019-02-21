@@ -1,6 +1,6 @@
-(ns restql.http.request-util-test
+(ns restql.http.request.util-test
   (:require [clojure.test :refer :all]
-            [restql.http.request-util :refer :all]))
+            [restql.http.request.util :refer :all]))
 
 (deftest test-headers-blacklist
 
@@ -48,7 +48,7 @@
         (parse "from foo\nfrom bar" {}))
      (= [:foo {:from :foo :method :get} :bar {:from :bar :method :get}]
         (parse "from foo\nfrom bar" {} true))))
-    
+
   (testing "Parse should call core cached function"
     (let [called (atom false)]
       (with-redefs [restql.parser.core/query-parser (fn [& _]
@@ -152,7 +152,7 @@
          200
          (calculate-response-status-code {:villain {:details {:status 204}}
                                           :hero {:details {:status 200}}}))))
-  
+
   (testing "Should correct status 0 to 503 and return higher status"
     (is (=
          503

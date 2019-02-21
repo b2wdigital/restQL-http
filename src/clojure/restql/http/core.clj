@@ -1,5 +1,5 @@
 (ns restql.http.core
-  (:require [restql.http.server :as server]
+  (:require [restql.http.server.core :as server]
             [restql.http.plugin.core :as plugin]
             [clojure.tools.logging :as log]
             [restql.http.database.persistence :as db]
@@ -71,9 +71,7 @@
     (display-loaded-plugins!)
     (plugin/register-plugins!)
     (when (start-api?)
-      (log/info "Starting server")
       (server/start! {:port port
                       :executor-utilization executor-utilization
                       :executor-max-threads executor-max-threads
-                      :executor-control-period executor-control-period})
-      (log/info "restQL Server running on port" port))))
+                      :executor-control-period executor-control-period}))))

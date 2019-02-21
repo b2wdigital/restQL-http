@@ -3,7 +3,7 @@
             [clojure.tools.logging :as log]
             [restql.config.core :as config]
             [restql.http.database.core :as dbcore]
-            [restql.http.cache :as cache]
+            [restql.http.cache.core :as cache]
             [slingshot.slingshot :refer [throw+]]))
 
 (defonce FIND_QUERY_TTL 86400000)
@@ -28,7 +28,7 @@
 
 (def get-query
   (cache/cached
-   (fn [namespace id revision]
+   (fn [{:keys [namespace id revision]}]
      (let
       [query-from-db (get-query-from-db namespace id revision)]
        (if-not (nil? query-from-db)

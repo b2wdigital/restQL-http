@@ -1,4 +1,4 @@
-(ns restql.http.request-util
+(ns restql.http.request.util
   (:require [cheshire.core :as json]
             [slingshot.slingshot :refer [try+]]
             [environ.core :refer [env]]
@@ -148,7 +148,7 @@
 (defn calculate-response-status-code
   "Calculates the response status code of a given result"
   [result]
-  
+
   (->> result
       (vals)
       (flatten)
