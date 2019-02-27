@@ -2,9 +2,12 @@
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
             [clojure.walk :refer [stringify-keys]]
-            [slingshot.slingshot :as slingshot]
+            [cheshire.core :as chesire]
             [environ.core :refer [env]]
-            [restql.http.request.util :as request-util]
+            [slingshot.slingshot :as slingshot]
+            [restql.http.query.headers :as headers]
+            [restql.http.query.calculate-response-status-code :refer [calculate-response-status-code]]
+            [restql.http.query.json-output :refer [json-output]]
             [restql.http.request.mappings :as request-mappings]
             [restql.parser.core :as parser]
             [restql.core.api.restql :as restql]
@@ -18,16 +21,46 @@
 
 (defn- make-headers [interpolated-query result]
   (-> (response-headers/get-response-headers interpolated-query result)
-      (into {"Content-Type" "application/json"})
       (stringify-keys)))
+
+(defn- identify-error
+  "Creates an error output response from a given error"
+  [err]
+
+  (case (:type err)
+    :expansion-error {:status 422 :body "There was an expansion error"}
+    :invalid-resource-type {:status 422 :body "Request with :from string is no longer supported"}
+    :invalid-parameter-repetition {:status 422 :body (:message err)}
+    {:status 500 :body "internal server error"}))
+
+(defn- map-values [f m]
+  (reduce-kv (fn [r k v] (assoc r k (f v))) {} m))
+
+(defn- dissoc-headers-from-details
+  "Dissoc headers from the response details"
+  [details]
+  (if (sequential? details)
+    (map dissoc-headers-from-details details)
+    (dissoc details :headers)))
+
+(defn- assoc-item-details
+  "Formats a response item"
+  [item]
+  (assoc item :details (dissoc-headers-from-details (:details item))))
+
+(defn- result-without-headers
+  "Formats the response body"
+  [result]
+ 
+  (map-values assoc-item-details result))
 
 (defn- create-response [query result]
   (slingshot/try+
-   {:body    (request-util/format-response-body result)
+   {:body    (result-without-headers result)
     :headers (make-headers query result)
-    :status  (request-util/calculate-response-status-code result)}
+    :status  (calculate-response-status-code result)}
    (catch Exception e (.printStackTrace e)
-    (request-util/error-output e))))
+    (identify-error e))))
 
 (defn- execute-query [query mappings encoders query-opts]
   (restql/execute-query-channel :mappings mappings
@@ -35,12 +68,12 @@
                                 :query query
                                 :query-opts query-opts))
 
-(defn run [query-string query-opts context]
+(defn run [query-string query-opts context]  
   (async/go
     (slingshot/try+
      (let [time-before             (System/currentTimeMillis)
            parsed-query            (parser/parse-query query-string :context context)
-           enhanced-query          (request-util/merge-headers (:forward-headers query-opts) parsed-query)
+           enhanced-query          (headers/query-with-foward-headers (:forward-headers query-opts) parsed-query)
            mappings                (request-mappings/get-mappings (:tenant query-opts))
            encoders                encoders/base-encoders
            [query-ch exception-ch] (execute-query enhanced-query mappings encoders query-opts)
@@ -52,18 +85,18 @@
          timeout-ch ([]
                      (log/warn "query runner timed out" {:time (- (System/currentTimeMillis) time-before)
                                                          :success false})
-                     (request-util/json-output 408 {:status 408 :message "Query timed out"}))
+                     (json-output {:status 408 :body {:status 408 :message "Query timed out"}}))
          exception-ch ([err]
                        (log/warn "query runner with error" {:time (- (System/currentTimeMillis) time-before)
                                                             :success false})
-                       (request-util/error-output err))
+                       (identify-error err))
          query-ch ([resp]
                    (log/debug "query runner with success" {:time (- (System/currentTimeMillis) time-before)
                                                            :success true})
-                   (create-response parsed-query resp))))
-    (catch [:type :validation-error] {:keys [message]}
-      (request-util/json-output 400 {:error "VALIDATION_ERROR" :message message}))
-    (catch [:type :parse-error] {:keys [line column]}
-      (request-util/json-output 400 {:error "PARSE_ERROR" :line line :column column}))
-    (catch Exception e (.printStackTrace e)
-      (request-util/json-output 500 {:error "UNKNOWN_ERROR" :message (.getMessage e)})))))
+                   (json-output (create-response parsed-query resp)))))
+     (catch [:type :validation-error] {:keys [message]}
+       (json-output {:status 400 :body {:error "VALIDATION_ERROR" :message message}}))
+     (catch [:type :parse-error] {:keys [line column]}
+       (json-output {:status 400 :body {:error "PARSE_ERROR" :line line :column column}}))
+     (catch Exception e (.printStackTrace e)
+            (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}})))))

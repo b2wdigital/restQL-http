@@ -5,7 +5,9 @@
             [manifold.stream :as manifold]
             [environ.core :refer [env]]
             [slingshot.slingshot :as slingshot]
-            [restql.http.request.util :as request-util]
+            [restql.core.validator.core :as validator]
+            [restql.parser.core :as parser]
+            [restql.http.query.json-output :refer [json-output]]
             [restql.http.query.runner :as query-runner]
             [restql.http.request.queries :as request-queries]))
 
@@ -22,13 +24,18 @@
               (:tenant query-params)
               tenant))))
 
+(defn- is-contextual?
+  "Filters if a given map key is contextual"
+  [prefix [k v]]
+  (->> k str (re-find (re-pattern prefix))))
+
 (defn- forward-params-from-query [env query-params]
   (-> env
       (:forward-prefix)
       (as-> prefix
             (if (nil? prefix)
               (identity {})
-              (into {} (filter (partial request-util/is-contextual? prefix) query-params))))))
+              (into {} (filter (partial is-contextual? prefix) query-params))))))
 
 (defn- headers-from-req-info [req-info]
   (->> req-info
@@ -53,20 +60,32 @@
   (-> (:params req)
       (into (:headers req))))
 
-(defn parse [req]
-  (manifold/take!
-   (manifold/->source
-    (async/go
-      (slingshot/try+
-       {:status 200 :body (request-util/parse-req req)}
-       (catch [:type :parse-error] {:keys [line column reason]}
-        {:status 400 :body (str "Parsing error in line " line ", column " column "\n" reason)}))))))
+(defn parse 
+  ([req]
+   (parse req false))
+  
+  ([req pretty]
+   (let [req-info {:type :parse-query}
+         query-ctx (req->query-ctx req)
+         query-string (some-> req :body slurp)]
+     (manifold/take!
+      (manifold/->source
+       (async/go
+         (slingshot/try+
+          {:status 200 :body (parser/parse-query query-string :pretty pretty :context query-ctx)}
+          (catch [:type :parse-error] {:keys [line column reason]}
+            {:status 400 :body (str "Parsing error in line " line ", column " column "\n" reason)}))))))))
 
 (defn validate [req]
   (manifold/take!
    (manifold/->source
     (async/go
-      (request-util/validate-request req)))))
+      (slingshot/try+
+       (let [query (parse req)]
+         (if (validator/validate {:mappings env} query)
+           (json-output {:status 200 :body "valid"})))
+       (catch [:type :validation-error] {:keys [message]}
+         (json-output {:status 400 :body message})))))))
 
 (defn adhoc [req]
   (slingshot/try+
@@ -78,7 +97,7 @@
       (manifold/->source
        (query-runner/run query-string query-opts query-ctx))))
    (catch Exception e (.printStackTrace e)
-      (request-util/json-output 500 {:error "UNKNOWN_ERROR" :message (.getMessage e)}))))
+          (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))))
 
 (defn saved [req]
   (slingshot/try+
@@ -93,6 +112,6 @@
        (manifold/->source
         (query-runner/run query-string query-opts query-ctx))))
     (catch [:type :query-not-found] e
-      (request-util/json-output 404 {:error "QUERY_NO_FOUND"}))
+      (json-output {:status 404 :body {:error "QUERY_NO_FOUND"}}))
     (catch Exception e (.printStackTrace e)
-      (request-util/json-output 500 {:error "UNKNOWN_ERROR" :message (.getMessage e)}))))
+      (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))))
