@@ -2,15 +2,15 @@
   (:require [cheshire.core :as json]
             [clojure.walk :refer [stringify-keys]]))
 
-(defn- add-content-type [xpto]
-  (->> (:headers xpto)
+(defn- add-content-type [response]
+  (->> (:headers response)
        (stringify-keys)
        (into {"Content-Type" "application/json"})))
 
 (defn json-output
   "Creates a json output given it's status and body (message)"
-  [xpto]
+  [response]
 
-  {:status  (:status xpto)
-   :headers (add-content-type xpto)
-   :body    (json/generate-string (:body xpto))})
+  {:status  (:status response)
+   :headers (add-content-type response)
+   :body    (json/generate-string (:body response))})
