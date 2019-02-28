@@ -8,7 +8,7 @@
             [restql.http.query.headers :as headers]
             [restql.http.query.calculate-response-status-code :refer [calculate-response-status-code]]
             [restql.http.query.json-output :refer [json-output]]
-            [restql.http.request.mappings :as request-mappings]
+            [restql.http.query.mappings :as mappings]
             [restql.parser.core :as parser]
             [restql.core.api.restql :as restql]
             [restql.core.response.headers :as response-headers]
@@ -51,7 +51,7 @@
 (defn- result-without-headers
   "Formats the response body"
   [result]
- 
+
   (map-values assoc-item-details result))
 
 (defn- create-response [query result]
@@ -68,13 +68,13 @@
                                 :query query
                                 :query-opts query-opts))
 
-(defn run [query-string query-opts context]  
+(defn run [query-string query-opts context]
   (async/go
     (slingshot/try+
      (let [time-before             (System/currentTimeMillis)
            parsed-query            (parser/parse-query query-string :context context)
            enhanced-query          (headers/query-with-foward-headers (:forward-headers query-opts) parsed-query)
-           mappings                (request-mappings/get-mappings (:tenant query-opts))
+           mappings                (mappings/from-tenant (:tenant query-opts))
            encoders                encoders/base-encoders
            [query-ch exception-ch] (execute-query enhanced-query mappings encoders query-opts)
            timeout-ch              (async/timeout (get-default :query-global-timeout))]
