@@ -73,10 +73,9 @@
     (slingshot/try+
      (let [time-before             (System/currentTimeMillis)
            parsed-query            (parser/parse-query query-string :context context)
-           enhanced-query          (headers/query-with-foward-headers (:forward-headers query-opts) parsed-query)
-           mappings                (mappings/from-tenant (:tenant query-opts))
+           mappings                (request-mappings/get-mappings (:tenant query-opts))
            encoders                encoders/base-encoders
-           [query-ch exception-ch] (execute-query enhanced-query mappings encoders query-opts)
+           [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)
            timeout-ch              (async/timeout (get-default :query-global-timeout))]
        (log/debug "query runner start with" {:query-string query-string
                                              :query-opts query-opts

@@ -9,29 +9,19 @@
    "origin"
    "accept-encoding"])
 
-(defn- header-allowed?
+(defn- headers-from-req-info [req-info]
+  (->> req-info
+       (reduce (fn [headers [key val]] (if (= key :type)
+                                         (merge headers {(str "restql-query-control") (name val)})
+                                         (merge headers {(str "restql-query-" (name key)) (str val)}))) {})))
+
+(defn- req-and-query-headers [req-info req]
+  (-> req-info
+      (headers-from-req-info)
+      (into (:headers req))))
+
+(defn header-allowed?
   "Filter to verify if the given header (k) is not on the headers-blacklist"
-  [[k v]]
+  [req-info req]
 
-  (let [header (str/lower-case k)]
-    (not-any? #(= header %) headers-blacklist)))
-
-(defn- add-headers-to-object
-  "Adds or appends headers to a given query"
-  [headers query-obj]
-
-  (if (nil? (query-obj :with-headers))
-    (into query-obj {:with-headers (into {} (filter header-allowed? headers))})
-    (into query-obj {:with-headers (into (query-obj :with-headers) (into {} (filter header-allowed? headers)))})))
-
-(defn query-with-foward-headers
-  "Merge a given headers map with the query :with-headers"
-  [headers query]
-
-  (let [data (partition 2 query)
-        binds (map first data)
-        items (map second data)
-        items-with-headers (map (partial add-headers-to-object headers) items)
-        data-with-headers (flatten (map vector binds items-with-headers))]
-    (binding [*print-meta* true]
-      (into [] data-with-headers))))
+  (apply dissoc (req-and-query-headers req-info req) headers-blacklist))
