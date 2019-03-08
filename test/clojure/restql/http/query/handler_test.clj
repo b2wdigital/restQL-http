@@ -32,7 +32,6 @@
       (go (>! error-ch "Some error"))
       (with-redefs [request-queries/get-query (constantly {})
                     restql.http.query.handler/parse (constantly {})
-                    restql.http.query.headers/query-with-foward-headers (constantly {})
                     restql.core.api.restql/execute-query-channel (constantly [(chan) error-ch])]
         (is (= {:status  500
                 :headers {"Content-Type" "application/json"}
@@ -45,7 +44,6 @@
     (let [exception-ch (chan)]
       (go (>! exception-ch {:error "some error"}))
       (with-redefs [parse (constantly {})
-                    restql.http.query.headers/query-with-foward-headers (constantly {})
                     restql.core.api.restql/execute-query-channel (constantly [(chan) exception-ch])]
         (is (= {:status  500
                 :headers {"Content-Type" "application/json"}
