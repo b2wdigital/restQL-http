@@ -73,7 +73,7 @@
     (slingshot/try+
      (let [time-before             (System/currentTimeMillis)
            parsed-query            (parser/parse-query query-string :context context)
-           mappings                (request-mappings/get-mappings (:tenant query-opts))
+           mappings                (mappings/from-tenant (:tenant query-opts))
            encoders                encoders/base-encoders
            [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)
            timeout-ch              (async/timeout (get-default :query-global-timeout))]
