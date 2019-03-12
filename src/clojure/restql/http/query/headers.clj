@@ -20,7 +20,7 @@
       (headers-from-req-info)
       (into (:headers req))))
 
-(defn header-allowed?
+(defn header-allowed
   "Filter to verify if the given header (k) is not on the headers-blacklist"
   [req-info req]
 
