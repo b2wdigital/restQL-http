@@ -44,7 +44,7 @@
      :tenant         (tenant-from-env-or-query env query-params)
      :info           req-info
      :forward-params (forward-params-from-query env query-params)
-     :forward-headers (headers/header-allowed? req-info req)}))
+     :forward-headers (headers/headers-allowed req-info req)}))
 
 (defn- req->query-ctx [req]
   (-> (:params req)
