@@ -6,8 +6,6 @@
             [restql.http.cache.core :as cache]
             [slingshot.slingshot :refer [throw+]]))
 
-(defonce FIND_QUERY_TTL 86400000)
-
 (defn get-query-from-config [namespace id revision]
   (if-let [config (->
                    [:queries]
@@ -27,11 +25,10 @@
       nil)))
 
 (def get-query
-  (cache/cached
-   (fn [{:keys [namespace id revision]}]
-     (let
-      [query-from-db (get-query-from-db namespace id revision)]
-       (if-not (nil? query-from-db)
-         query-from-db
-         (get-query-from-config namespace id revision))))
-   FIND_QUERY_TTL))
+  (->>
+    (fn [{:keys [namespace id revision]}]
+      (let [query-from-db (get-query-from-db namespace id revision)]
+        (if-not (nil? query-from-db)
+          query-from-db
+          (get-query-from-config namespace id revision))))
+   (cache/cached :fifo)))

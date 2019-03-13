@@ -30,9 +30,9 @@
       nil)))
 
 (def from-tenant
-  (->
+  (->>
    (fn [tenant] (merge
                   (get-mappings-from-config)
                   (get-mappings-from-db tenant)
                   env))
-   (cache/cached (get-default-value :mappings-ttl))))
+   (cache/cached :ttl (get-default-value :mappings-ttl))))

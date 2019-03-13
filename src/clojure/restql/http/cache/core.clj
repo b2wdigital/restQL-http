@@ -1,23 +1,20 @@
 (ns restql.http.cache.core
-  (:require [clojure.tools.logging :as log]
-            [slingshot.slingshot :refer [throw+]]
-            [environ.core :refer [env]]
+  (:require [environ.core :refer [env]]
             [clojure.core.memoize :as memo]))
 
 (def DEFAULT_TTL (if (contains? env :cache-ttl) (read-string (env :cache-ttl)) 60000))
 
-(defn cached
+(def DEFAULT_CACHED_COUNT (if (contains? env :cache-count) (read-string (env :cache-count)) 2000))
+
+(defmulti cached
   "Verifies if a given function is cached, executing and saving on the cache
    if not cached or returning the cached value"
-  ([function]
+  (fn [type & _] type))
 
-   (cached function DEFAULT_TTL))
+(defmethod cached :ttl
+  ([_:ttl function] (cached :ttl DEFAULT_TTL function))
+  ([_:ttl ttl function] (memo/ttl function {} :ttl/threshold ttl)))
 
-  ([function ttl]
-   (memo/ttl function {} :ttl/threshold ttl)))
-
-(defn clear-cache
-  "Clears the cache"
-  [cached-fn]
-
-  (memo/memo-clear! cached-fn))
+(defmethod cached :fifo
+  ([_:fifo function] (cached :fifo DEFAULT_CACHED_COUNT function))
+  ([_:fifo cached_count function] (memo/fifo function {} :fifo/threshold cached_count)))
