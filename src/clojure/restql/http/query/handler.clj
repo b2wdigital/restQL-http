@@ -101,17 +101,21 @@
 
 (defn saved [req]
   (slingshot/try+
-    (let [req-info {:type      :saved
-                    :id        (some-> req :params :id)
-                    :namespace (some-> req :params :namespace)
-                    :revision  (some-> req :params :rev read-string)}
-          query-opts (req->query-opts req-info req)
-          query-ctx (req->query-ctx req)
-          query-string (request-queries/get-query req-info)]
-      (manifold/take!
-       (manifold/->source
-        (query-runner/run query-string query-opts query-ctx))))
-    (catch [:type :query-not-found] e
-      (json-output {:status 404 :body {:error "QUERY_NO_FOUND"}}))
-    (catch Exception e (.printStackTrace e)
-      (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))))
+   (let [req-info {:type      :saved
+                   :id        (some-> req :params :id)
+                   :namespace (some-> req :params :namespace)
+                   :revision  (some-> req :params :rev read-string)}
+         query-opts (req->query-opts req-info req)
+         query-ctx (req->query-ctx req)
+         query-string (request-queries/get-query req-info)]
+     (manifold/take!
+      (manifold/->source
+       (query-runner/run query-string query-opts query-ctx))))
+   (catch [:type :query-not-found] e
+     (json-output {:status 404 :body {:error "QUERY_NO_FOUND"}}))
+   (catch Exception e
+     (.printStackTrace e)
+     (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))
+   (catch Object o
+     (log/error "UNKNOWN_ERROR" o)
+     (json-output {:status 500 :body {:error "UNKNOWN_ERROR"}}))))

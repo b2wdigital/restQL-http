@@ -95,8 +95,14 @@
                                                            :success true})
                    (json-output (create-response parsed-query resp)))))
      (catch [:type :validation-error] {:keys [message]}
+       (log/error {:error "VALIDATION_ERROR" :message message})
        (json-output {:status 400 :body {:error "VALIDATION_ERROR" :message message}}))
      (catch [:type :parse-error] {:keys [line column]}
+       (log/error {:error "PARSE_ERROR" :line line :column column})
        (json-output {:status 400 :body {:error "PARSE_ERROR" :line line :column column}}))
-     (catch Exception e (.printStackTrace e)
-            (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}})))))
+     (catch Exception e
+       (.printStackTrace e)
+       (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))
+     (catch Object o
+       (log/error "UNKNOWN_ERROR" o)
+       (json-output {:status 500 :body {:error "UNKNOWN_ERROR"}})))))
