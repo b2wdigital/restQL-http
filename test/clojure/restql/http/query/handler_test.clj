@@ -3,6 +3,7 @@
             [slingshot.test]
             [slingshot.slingshot :refer [throw+]]
             [clojure.core.async :refer [chan go >!]]
+            [clojure.string :refer [includes?]]
             [restql.http.query.handler :refer [parse]]
             [restql.http.request.queries :as request-queries]
             [restql.http.query.handler :as query-handler]))
@@ -33,12 +34,12 @@
       (with-redefs [request-queries/get-query (constantly {})
                     restql.http.query.handler/parse (constantly {})
                     restql.core.api.restql/execute-query-channel (constantly [(chan) error-ch])]
-        (is (= {:status  500
-                :headers {"Content-Type" "application/json"}
-                :body    "{\"error\":\"UNKNOWN_ERROR\",\"message\":\"clojure.lang.PersistentArrayMap cannot be cast to java.lang.CharSequence\"}"}
-               (-> {:params {:namespace "ns", :id "id", :rev "1"}}
-                   (query-handler/saved)
-                   (deref)))))))
+        (let [result (-> {:params {:namespace "ns", :id "id", :rev "1"}}
+                         (query-handler/saved)
+                         (deref))]
+          (is (= 500 (:status result)))
+          (is (= {"Content-Type" "application/json"} (:headers result)))
+          (is (includes? (:body result) "{\"error\":\"UNKNOWN_ERROR\",\"message\":"))))))
 
   (testing "Is return for run-query with exception"
     (let [exception-ch (chan)]
