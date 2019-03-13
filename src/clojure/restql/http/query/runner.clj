@@ -2,7 +2,7 @@
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
             [clojure.walk :refer [stringify-keys]]
-            [cheshire.core :as chesire]
+            [cheshire.core :as json]
             [environ.core :refer [env]]
             [slingshot.slingshot :as slingshot]
             [restql.http.query.headers :as headers]
@@ -54,6 +54,13 @@
 
   (map-values assoc-item-details result))
 
+(defn- parse-param-value
+  [value]
+  (slingshot/try+
+   (json/parse-string value)
+   (catch Exception e
+     value)))
+
 (defn- create-response [query result]
   (slingshot/try+
    {:body    (result-without-headers result)
@@ -72,7 +79,8 @@
   (async/go
     (slingshot/try+
      (let [time-before             (System/currentTimeMillis)
-           parsed-query            (parser/parse-query query-string :context context)
+           parsed-context          (map-values parse-param-value context)
+           parsed-query            (parser/parse-query query-string :context parsed-context)
            mappings                (mappings/from-tenant (:tenant query-opts))
            encoders                encoders/base-encoders
            [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)
