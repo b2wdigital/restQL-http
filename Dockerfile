@@ -1,8 +1,4 @@
-FROM openjdk:8-alpine
-
-RUN apk update
-RUN apk upgrade
-RUN apk add bash
+FROM openjdk:11-jdk
 
 RUN mkdir -p /usr/src/restql-http
 ADD ./dist /usr/src/restql-http
