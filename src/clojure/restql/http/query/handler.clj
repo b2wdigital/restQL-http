@@ -7,6 +7,7 @@
             [slingshot.slingshot :as slingshot]
             [restql.core.validator.core :as validator]
             [restql.parser.core :as parser]
+            [restql.http.query.headers :as headers]
             [restql.http.query.json-output :refer [json-output]]
             [restql.http.query.runner :as query-runner]
             [restql.http.request.queries :as request-queries]))
@@ -37,24 +38,13 @@
               (identity {})
               (into {} (filter (partial is-contextual? prefix) query-params))))))
 
-(defn- headers-from-req-info [req-info]
-  (->> req-info
-       (reduce (fn [headers [key val]] (if (= key :type)
-                                         (merge headers {(str "restql-query-control") (name val)})
-                                         (merge headers {(str "restql-query-" (name key)) (str val)}))) {})))
-
-(defn- req-and-query-headers [req-info req]
-  (-> req-info
-      (headers-from-req-info)
-      (into (:headers req))))
-
 (defn- req->query-opts [req-info req]
   (let [query-params (-> req :query-params keywordize-keys)]
     {:debugging      (debugging-from-query query-params)
      :tenant         (tenant-from-env-or-query env query-params)
      :info           req-info
      :forward-params (forward-params-from-query env query-params)
-     :forward-headers (req-and-query-headers req-info req)}))
+     :forward-headers (headers/header-allowed req-info req)}))
 
 (defn- req->query-ctx [req]
   (-> (:params req)
@@ -101,17 +91,21 @@
 
 (defn saved [req]
   (slingshot/try+
-    (let [req-info {:type      :saved
-                    :id        (some-> req :params :id)
-                    :namespace (some-> req :params :namespace)
-                    :revision  (some-> req :params :rev read-string)}
-          query-opts (req->query-opts req-info req)
-          query-ctx (req->query-ctx req)
-          query-string (request-queries/get-query req-info)]
-      (manifold/take!
-       (manifold/->source
-        (query-runner/run query-string query-opts query-ctx))))
-    (catch [:type :query-not-found] e
-      (json-output {:status 404 :body {:error "QUERY_NO_FOUND"}}))
-    (catch Exception e (.printStackTrace e)
-      (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))))
+   (let [req-info {:type      :saved
+                   :id        (some-> req :params :id)
+                   :namespace (some-> req :params :namespace)
+                   :revision  (some-> req :params :rev read-string)}
+         query-opts (req->query-opts req-info req)
+         query-ctx (req->query-ctx req)
+         query-string (request-queries/get-query req-info)]
+     (manifold/take!
+      (manifold/->source
+       (query-runner/run query-string query-opts query-ctx))))
+   (catch [:type :query-not-found] e
+     (json-output {:status 404 :body {:error "QUERY_NO_FOUND"}}))
+   (catch Exception e
+     (.printStackTrace e)
+     (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))
+   (catch Object o
+     (log/error "UNKNOWN_ERROR" o)
+     (json-output {:status 500 :body {:error "UNKNOWN_ERROR"}}))))

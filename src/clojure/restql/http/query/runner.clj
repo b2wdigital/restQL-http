@@ -2,7 +2,7 @@
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
             [clojure.walk :refer [stringify-keys]]
-            [cheshire.core :as chesire]
+            [cheshire.core :as json]
             [environ.core :refer [env]]
             [slingshot.slingshot :as slingshot]
             [restql.http.query.headers :as headers]
@@ -54,6 +54,13 @@
 
   (map-values assoc-item-details result))
 
+(defn- parse-param-value
+  [value]
+  (slingshot/try+
+   (json/parse-string value)
+   (catch Exception e
+     value)))
+
 (defn- create-response [query result]
   (slingshot/try+
    {:body    (result-without-headers result)
@@ -72,11 +79,11 @@
   (async/go
     (slingshot/try+
      (let [time-before             (System/currentTimeMillis)
-           parsed-query            (parser/parse-query query-string :context context)
-           enhanced-query          (headers/query-with-foward-headers (:forward-headers query-opts) parsed-query)
+           parsed-context          (map-values parse-param-value context)
+           parsed-query            (parser/parse-query query-string :context parsed-context)
            mappings                (mappings/from-tenant (:tenant query-opts))
            encoders                encoders/base-encoders
-           [query-ch exception-ch] (execute-query enhanced-query mappings encoders query-opts)
+           [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)
            timeout-ch              (async/timeout (get-default :query-global-timeout))]
        (log/debug "query runner start with" {:query-string query-string
                                              :query-opts query-opts
@@ -95,8 +102,14 @@
                                                            :success true})
                    (json-output (create-response parsed-query resp)))))
      (catch [:type :validation-error] {:keys [message]}
+       (log/error {:error "VALIDATION_ERROR" :message message})
        (json-output {:status 400 :body {:error "VALIDATION_ERROR" :message message}}))
      (catch [:type :parse-error] {:keys [line column]}
+       (log/error {:error "PARSE_ERROR" :line line :column column})
        (json-output {:status 400 :body {:error "PARSE_ERROR" :line line :column column}}))
-     (catch Exception e (.printStackTrace e)
-            (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}})))))
+     (catch Exception e
+       (.printStackTrace e)
+       (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))
+     (catch Object o
+       (log/error "UNKNOWN_ERROR" o)
+       (json-output {:status 500 :body {:error "UNKNOWN_ERROR"}})))))
