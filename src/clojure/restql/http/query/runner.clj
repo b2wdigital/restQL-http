@@ -67,7 +67,7 @@
     :headers (make-headers query result)
     :status  (calculate-response-status-code result)}
    (catch Exception e (.printStackTrace e)
-    (identify-error e))))
+          (identify-error e))))
 
 (defn- execute-query [query mappings encoders query-opts]
   (restql/execute-query-channel :mappings mappings
@@ -80,7 +80,8 @@
     (slingshot/try+
      (let [time-before             (System/currentTimeMillis)
            parsed-context          (map-values parse-param-value context)
-           parsed-query            (parser/parse-query query-string :context parsed-context)
+           query-type              (get-in query-opts [:info :type])
+           parsed-query            (parser/parse-query query-string :context parsed-context :query-type query-type)
            mappings                (mappings/from-tenant (:tenant query-opts))
            encoders                encoders/base-encoders
            [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)
