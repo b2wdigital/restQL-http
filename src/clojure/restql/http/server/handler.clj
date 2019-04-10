@@ -3,6 +3,8 @@
    [ring.middleware.params :as params]
    [compojure.core :as compojure :refer [GET POST OPTIONS]]
    [compojure.route :as route]
+   [environ.core :refer [env]]
+   [restql.http.query.json-output :refer [json-output]]
    [compojure.response :refer [Renderable]]
    [restql.http.query.handler :as query-handler]
    [restql.http.server.exception-handler :refer [wrap-exception-handling]]))
@@ -11,12 +13,22 @@
   clojure.lang.IDeref
   (render [d _] (manifold.deferred/->deferred d)))
 
+(def default-value {:adhoc-lock "false"})
+
+(defn- get-default-value [env-var]
+  (if (contains? env env-var) (get env env-var) (get default-value env-var)))
+
+(defn adhoc-wrap [req]
+  (if (= (get-default-value :adhoc-lock) "true")
+    (json-output {:status 405 :body {:error "FORBIDDEN_OPERATION" :message "ad-hoc queries are turned off"}})
+    (query-handler/adhoc req)))
+
 (def handler
   (-> (compojure/routes
        (GET  "/health"                        [] "I'm healthy! :)")
        (GET  "/resource-status"               [] "Up and running! :)")
        (GET  "/run-query/:namespace/:id/:rev" [] query-handler/saved)
-       (POST "/run-query"                     [] query-handler/adhoc)
+       (POST "/run-query"                     [] adhoc-wrap)
        (POST "/parse-query"                   [] query-handler/parse)
        (POST "/validate-query"                [] query-handler/validate)
        (OPTIONS "*"                           [] {:status 204})

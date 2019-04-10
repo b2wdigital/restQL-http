@@ -39,4 +39,6 @@
                                  :cards     "http://api.magicthegathering.io/v1/cards"
                                  :card      "http://api.magicthegathering.io/v1/cards/:id"
                                  :planets   "https://swapi.co/api/planets/:id"}
-                       :plugins [[lein-cloverage "1.0.9"]]}})
+                       :plugins [[lein-cloverage "1.0.9"]]}
+             :test    {:env {:adhoc-lock "true"}}})
+                                 
