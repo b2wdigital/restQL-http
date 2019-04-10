@@ -13,13 +13,13 @@
   clojure.lang.IDeref
   (render [d _] (manifold.deferred/->deferred d)))
 
-(def default-value {:adhoc-lock "false"})
+(def default-value {:adhoc-lock false})
 
 (defn- get-default-value [env-var]
   (if (contains? env env-var) (get env env-var) (get default-value env-var)))
 
 (defn adhoc-wrap [req]
-  (if (= (get-default-value :adhoc-lock) "true")
+  (if (get-default-value :adhoc-lock)
     (json-output {:status 405 :body {:error "FORBIDDEN_OPERATION" :message "ad-hoc queries are turned off"}})
     (query-handler/adhoc req)))
 

@@ -5,7 +5,7 @@
             [clojure.core.async :refer [chan go >!]]
             [clojure.string :refer [includes?]]
             [environ.core :refer [env]]
-            [restql.http.server.handler :refer [adhoc-wrap]]
+            [restql.http.server.handler :as server-handler]
             [restql.http.query.handler :refer [parse]]
             [restql.http.request.queries :as request-queries]
             [restql.http.query.handler :as query-handler]))
@@ -22,12 +22,13 @@
 
 (deftest blocked-adhoc
   (testing ":adhoc-lock environment variable is set to false should return 405"
-    (is
-     (= {:status 405
-         :headers {"Content-Type" "application/json"}
-         :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}
-        (-> {:params {:namespace "ns", :id "id", :rev "1"}}
-            (adhoc-wrap))))))
+    (with-redefs [server-handler/get-default-value (fn [_] true)]
+                 (is
+                  (= {:status 405
+                      :headers {"Content-Type" "application/json"}
+                      :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}
+                     (-> {:params {:namespace "ns", :id "id", :rev "1"}}
+                         (server-handler/adhoc-wrap)))))))
 
 (deftest test-query-no-found
   (testing "Is return for query not found"
