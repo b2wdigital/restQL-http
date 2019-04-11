@@ -18,13 +18,10 @@
 (defn- get-default-value [env-var]
   (if (contains? env env-var) (get env env-var) (get default-value env-var)))
 
-(defn- adhoc-error-response [_]
-  (json-output {:status 405 :body {:error "FORBIDDEN_OPERATION" :message "ad-hoc queries are turned off"}}))
-
 (defn- check-allow-adhoc []
   (if (true? (get-default-value :allow-adhoc-queries))
     query-handler/adhoc
-    adhoc-error-response))
+    (json-output {:status 405 :body {:error "FORBIDDEN_OPERATION" :message "ad-hoc queries are turned off"}})))
 
 (def adhoc-wrap (check-allow-adhoc))
 
