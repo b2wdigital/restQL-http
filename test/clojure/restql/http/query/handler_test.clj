@@ -21,8 +21,8 @@
                      (deref)))))))
 
 (deftest blocked-adhoc
-  (testing ":adhoc-lock environment variable is set to false should return 405"
-    (with-redefs [server-handler/get-default-value (fn [_] true)]
+  (testing ":allow-adhoc-queries environment variable is set to false should return 405"
+    (with-redefs [server-handler/get-default-value (fn [_] false)]
                  (is
                   (= {:status 405
                       :headers {"Content-Type" "application/json"}
