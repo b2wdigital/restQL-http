@@ -23,12 +23,14 @@
 (deftest blocked-adhoc
   (testing ":allow-adhoc-queries environment variable is set to false should return 405"
     (with-redefs [server-handler/get-default-value (fn [_] false)]
-                 (is
-                  (= {:status 405
-                      :headers {"Content-Type" "application/json"}
-                      :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}
-                     (-> {:params {:namespace "ns", :id "id", :rev "1"}}
-                         (server-handler/adhoc-wrap)))))))
+                 (let [check-allow-adhoc #'server-handler/check-allow-adhoc
+                       adhoc-wrap (check-allow-adhoc)]
+                   (is
+                    (= {:status 405
+                        :headers {"Content-Type" "application/json"}
+                        :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}
+                       (-> {:params {:namespace "ns", :id "id", :rev "1"}}
+                           (adhoc-wrap))))))))
 
 (deftest test-query-no-found
   (testing "Is return for query not found"
