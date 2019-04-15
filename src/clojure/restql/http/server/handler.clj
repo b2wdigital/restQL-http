@@ -19,7 +19,7 @@
   (if (contains? env env-var) (get env env-var) (get default-value env-var)))
 
 (defn- check-allow-adhoc []
-  (if (true? (get-default-value :allow-adhoc-queries))
+  (if (true? (boolean (get-default-value :allow-adhoc-queries)))
     query-handler/adhoc
     (json-output {:status 405 :body {:error "FORBIDDEN_OPERATION" :message "ad-hoc queries are turned off"}})))
 
