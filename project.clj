@@ -33,6 +33,7 @@
   :profiles {:uberjar {:aot :all
                        :env {:port      "9000"
                              :cache-ttl "30000"}}
+             :test    {:env {:go-routine-start-execution-timeout 500}}
              :dev     {:env     {:port      "9000"
                                  :cache-ttl "30000"
                                  :mappings-cache-ttl "60000"
@@ -40,4 +41,4 @@
                                  :card      "http://api.magicthegathering.io/v1/cards/:id"
                                  :planets   "https://swapi.co/api/planets/:id"}
                        :plugins [[lein-cloverage "1.0.9"]]}})
-                                 
+
