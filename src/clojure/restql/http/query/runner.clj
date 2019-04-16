@@ -54,12 +54,16 @@
 
   (map-values assoc-item-details result))
 
-(defn- parse-param-value
-  [value]
+(defn- parse-param-json-value [value]
   (slingshot/try+
    (json/parse-string value)
    (catch Exception e
      value)))
+
+(defn- parse-param-value [value]
+  (if (re-matches #"[\{\[](.*)" value)
+    (parse-param-json-value value)
+    value))
 
 (defn- create-response [query result]
   (slingshot/try+
@@ -90,9 +94,9 @@
 
 (defn- get-error-msg [error]
   (let [errorMsg (.getMessage error)]
-        (if (nil? errorMsg)
-          "null"
-          errorMsg)))
+    (if (nil? errorMsg)
+      "null"
+      errorMsg)))
 
 (defmacro timed-go
   [timeout & args]
