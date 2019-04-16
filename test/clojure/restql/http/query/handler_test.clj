@@ -35,7 +35,7 @@
     (with-redefs [request-queries/get-query (fn [_] (throw+ {:type :query-not-found}))]
       (is (= {:status  404
               :headers {"Content-Type" "application/json"}
-              :body    "{\"error\":\"QUERY_NO_FOUND\"}"}
+              :body    "{\"error\":\"QUERY_NOT_FOUND\"}"}
              (query-handler/saved {:params {:namespace "ns", :id "id-1", :rev "5"}}))))))
 
 (deftest should-return-500-when-exception-processing-query

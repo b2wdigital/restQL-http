@@ -7,7 +7,6 @@
             [slingshot.slingshot :as slingshot]
             [restql.http.query.headers :as headers]
             [restql.http.query.calculate-response-status-code :refer [calculate-response-status-code]]
-            [restql.http.query.json-output :refer [json-output]]
             [restql.http.query.mappings :as mappings]
             [restql.parser.core :as parser]
             [restql.core.api.restql :as restql]
@@ -76,6 +75,25 @@
                                 :query query
                                 :query-opts query-opts))
 
+(defn- add-content-type [response]
+  (->> (:headers response)
+       (stringify-keys)
+       (into {"Content-Type" "application/json"})))
+
+(defn- json-output
+  "Creates a json output given it's status and body (message)"
+  [response]
+
+  {:status  (:status response)
+   :headers (add-content-type response)
+   :body    (json/generate-string (:body response))})
+
+(defn- get-error-msg [error]
+  (let [errorMsg (.getMessage error)]
+        (if (nil? errorMsg)
+          "null"
+          errorMsg)))
+
 (defmacro timed-go
   [timeout & args]
   `(let [time# (System/currentTimeMillis)]
@@ -102,7 +120,7 @@
                  timeout-ch ([]
                              (log/warn "query runner timed out" {:time (- (System/currentTimeMillis) time-before)
                                                                  :success false})
-                             (json-output {:status 408 :body {:status 408 :message "Query timed out"}}))
+                             {:status 408 :headers {"Content-Type" "application/json"} :body "{\"message\":\"Query timed out\"}"})
                  exception-ch ([err]
                                (log/warn "query runner with error" {:time (- (System/currentTimeMillis) time-before)
                                                                     :success false})
@@ -113,13 +131,13 @@
                            (json-output (create-response parsed-query resp)))))
              (catch [:type :validation-error] {:keys [message]}
                (log/error {:error "VALIDATION_ERROR" :message message})
-               (json-output {:status 400 :body {:error "VALIDATION_ERROR" :message message}}))
+               {:status 400 :headers {"Content-Type" "application/json"} :body (str "{\"error\":\"VALIDATION_ERROR\",\"message\":\"" message "\"}")})
              (catch [:type :parse-error] {:keys [line column]}
                (log/error {:error "PARSE_ERROR" :line line :column column})
-               (json-output {:status 400 :body {:error "PARSE_ERROR" :line line :column column}}))
+               {:status 400 :headers {"Content-Type" "application/json"} :body (str "{\"error\":\"PARSE_ERROR\",\"line\":\"" line "\",\"column\":\"" column "\"}")})
              (catch Exception e
                (.printStackTrace e)
-               (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))
+               {:status 500 :headers {"Content-Type" "application/json"} :body (str "{\"error\":\"UNKNOWN_ERROR\",\"message\":" (get-error-msg e) "}")})
              (catch Object o
                (log/error "UNKNOWN_ERROR" o)
-               (json-output {:status 500 :body {:error "UNKNOWN_ERROR"}})))))
+               {:status 500 :headers {"Content-Type" "application/json"} :body "{\"error\":\"UNKNOWN_ERROR\"}"}))))

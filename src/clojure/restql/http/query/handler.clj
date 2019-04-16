@@ -8,7 +8,6 @@
             [restql.core.validator.core :as validator]
             [restql.parser.core :as parser]
             [restql.http.query.headers :as headers]
-            [restql.http.query.json-output :refer [json-output]]
             [restql.http.query.runner :as query-runner]
             [restql.http.request.queries :as request-queries]))
 
@@ -73,9 +72,9 @@
       (slingshot/try+
        (let [query (parse req)]
          (if (validator/validate {:mappings env} query)
-           (json-output {:status 200 :body "valid"})))
+           {:status 200 :headers {"Content-Type" "application/json"} :body "valid"}))
        (catch [:type :validation-error] {:keys [message]}
-         (json-output {:status 400 :body message})))))))
+         {:status 400 :headers {"Content-Type" "application/json"} :body (str "\"" message "\"")}))))))
 
 (defn adhoc [req]
   (slingshot/try+
@@ -87,7 +86,7 @@
       (manifold/->source
        (query-runner/run query-string query-opts query-ctx))))
    (catch Exception e (.printStackTrace e)
-          (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))))
+          {:status 500 :headers {"Content-Type" "application/json"} :body (str "{\"error\":\"UNKNOWN_ERROR\",\"message\":\"" (.getMessage e) "\"}")})))
 
 (defn saved [req]
   (slingshot/try+
@@ -102,10 +101,10 @@
       (manifold/->source
        (query-runner/run query-string query-opts query-ctx))))
    (catch [:type :query-not-found] e
-     (json-output {:status 404 :body {:error "QUERY_NO_FOUND"}}))
+     {:status 404 :headers {"Content-Type" "application/json"} :body "{\"error\":\"QUERY_NOT_FOUND\"}"})
    (catch Exception e
      (.printStackTrace e)
-     (json-output {:status 500 :body {:error "UNKNOWN_ERROR" :message (.getMessage e)}}))
+     {:status 500 :headers {"Content-Type" "application/json"} :body (str "{\"error\":\"UNKNOWN_ERROR\",\"message\":\"" (.getMessage e) "\"}")})
    (catch Object o
      (log/error "UNKNOWN_ERROR" o)
-     (json-output {:status 500 :body {:error "UNKNOWN_ERROR"}}))))
+     {:status 500 :headers {"Content-Type" "application/json"} :body "{\"error\":\"UNKNOWN_ERROR\"}"})))

@@ -20,6 +20,15 @@
            {:details {:metadata {:x 1}}}
            (assoc-item-details {:details {:headers {"foo" "bar"} :metadata {:x 1}}}))))))
 
+(deftest creating-a-valid-json-response
+  (testing "If it's a valid json response"
+    (let [json-output #'runner/json-output]
+      (is (=
+           {:status  200
+            :headers {"Content-Type" "application/json"}
+            :body "{\"foo\":\"bar\"}"}
+           (json-output {:status 200 :body {:foo "bar"}}))))))
+
 (deftest identify-error-test
   (let [identify-error #'runner/identify-error]
     (testing "Expansion Error should return 422"

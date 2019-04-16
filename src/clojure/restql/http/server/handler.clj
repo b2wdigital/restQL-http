@@ -4,7 +4,6 @@
    [compojure.core :as compojure :refer [GET POST OPTIONS]]
    [compojure.route :as route]
    [environ.core :refer [env]]
-   [restql.http.query.json-output :refer [json-output]]
    [compojure.response :refer [Renderable]]
    [restql.http.query.handler :as query-handler]
    [restql.http.server.exception-handler :refer [wrap-exception-handling]]))
@@ -21,7 +20,7 @@
 (defn- check-allow-adhoc []
   (if (true? (boolean (get-default-value :allow-adhoc-queries)))
     query-handler/adhoc
-    (json-output {:status 405 :body {:error "FORBIDDEN_OPERATION" :message "ad-hoc queries are turned off"}})))
+    {:status 405 :headers {"Content-Type" "application/json"} :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}))
 
 (def adhoc-wrap (check-allow-adhoc))
 
