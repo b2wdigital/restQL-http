@@ -22,8 +22,7 @@ from hero as heroList
 
 Links:
 * [Tackling microservice query complexity](https://medium.com/b2w-engineering/restql-tackling-microservice-query-complexity-27def5d09b40): Project motivation and history
-* [@restQL](https://t.me/restQL): restQL Telegram Group
-* [@restQLBR](https://t.me/restQLBR): Brazilian restQL Telegram Group
+* [@restQL](https://t.me/restQLBR): restQL Telegram Group
 * [restql.b2w.io](http://restql.b2w.io): Project home page,
 * [game.b2w.io](http://game.b2w.io): A game developed to teach the basics of restQL language,
 * [restQL-clojure](https://github.com/B2W-BIT/restQL-clojure): If you want to embed restQL directly into your Clojure application,
@@ -45,9 +44,8 @@ Who're talking about restQL:
 
 ## Help and community
 
-If you need help you can reach the community on Telegram
-- https://t.me/restQL (English)
-- https://t.me/restQLBR (Portuguese)
+If you need help you can reach the community on Telegram:
+- https://t.me/restQLBR
 
 ## Releases
 

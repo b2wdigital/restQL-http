@@ -14,8 +14,7 @@ from hero as heroList
 
 Links
 * [#restql](https://clojurians.slack.com/messages/C8S6EG8BF): [clojurians](https://clojurians.slack.com) restQL Slack channel
-* [@restQL](https://t.me/restQL): restQL Telegram Group
-* [@restQLBR](https://t.me/restQLBR): Brazilian restQL Telegram Group
+* [@restQLBR](https://t.me/restQLBR): restQL Telegram Group
 * [restql.b2w.io](http://restql.b2w.io): Project home page,
 * [game.b2w.io](http://game.b2w.io): A game developed to teach the basics of restQL language,
 * [restQL-clojure](https://github.com/B2W-BIT/restQL-clojure): If you want to embed restQL directly into your Clojure application,
@@ -56,9 +55,8 @@ curl -H "Content-Type: text/plain" localhost:9000/run-query -d "from planets as 
 
 # Help and community
 
-If you need help you can reach the community on Telegram
-- https://t.me/restQL (English)
-- https://t.me/restQLBR (Portuguese)
+If you need help you can reach the community on Telegram:
+- https://t.me/restQLBR 
 
 
 # Source and Docker

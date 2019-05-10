@@ -1,6 +1,6 @@
 # Configuration
 
-## Enviromnent variables:
+## Environment variables:
 - `PORT` allows you to specify which port the servers will listen (default is `9000`)
 - `MONGO_URL` allows you to specify the connection with restQL-manager database (default is `nil`)
 - `EXECUTOR_UTILIZATION` allows you to specify the server executor thread pool target utilization (default is `0.9`) - Learn more at [Manifold's wiki](https://github.com/ztellman/manifold/blob/449d1c63e13d5735e704eba02ed949f862d02596/src/manifold/executor.clj#L165)

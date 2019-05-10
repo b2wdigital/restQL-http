@@ -23,6 +23,5 @@ This will add the following field under response `details`:
     }
 ```
 For more information, you can contact the restQL team at our communication channels:
-* [@restQL](https://t.me/restQL): restQL Telegram Group
-* [@restQLBR](https://t.me/restQLBR): Brazilian restQL Telegram Group
+* [@restQLBR](https://t.me/restQLBR): restQL Telegram Group
 * <restql@b2wdigital.com>: restQL team e-mail
