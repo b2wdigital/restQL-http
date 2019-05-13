@@ -28,7 +28,7 @@
                     (= {:status 405
                         :headers {"Content-Type" "application/json"}
                         :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}
-                       (check-allow-adhoc)))))))
+                       (check-allow-adhoc {})))))))
 
 (deftest test-query-no-found
   (testing "Is return for query not found"
