@@ -30,7 +30,7 @@
        (POST "/run-query"                     [] get-adhoc-behaviour)
        (POST "/parse-query"                   [] query-handler/parse)
        (POST "/validate-query"                [] query-handler/validate)
-       (OPTIONS "*"                           [] {:status 204})
+       (OPTIONS "*"                           [] query-handler/options)
        (route/not-found                       "There is nothing here. =/"))
       (wrap-exception-handling)
       (params/wrap-params)))

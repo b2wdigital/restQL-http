@@ -108,3 +108,6 @@
    (catch Object o
      (log/error "UNKNOWN_ERROR" o)
      {:status 500 :headers {"Content-Type" "application/json"} :body "{\"error\":\"UNKNOWN_ERROR\"}"})))
+
+(defn options [req]
+  {:status 204 :headers (query-runner/fetch-cors-headers)})

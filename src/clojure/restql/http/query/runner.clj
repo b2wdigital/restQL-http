@@ -4,6 +4,7 @@
             [clojure.walk :refer [stringify-keys]]
             [cheshire.core :as json]
             [environ.core :refer [env]]
+            [restql.config.core :as config]            
             [slingshot.slingshot :as slingshot]
             [restql.http.query.headers :as headers]
             [restql.http.query.calculate-response-status-code :refer [calculate-response-status-code]]
@@ -14,12 +15,40 @@
             [restql.core.encoders.core :as encoders]))
 
 (def default-values {:query-global-timeout 30000
-                     :max-query-overhead-ms 50})
+                     :max-query-overhead-ms 50
+                     :cors-allow-origin   "*"
+                     :cors-allow-methods  "GET, POST, PUT, PATH, DELETE, OPTIONS"
+                     :cors-allow-headers  "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+                     :cors-expose-headers "Content-Length,Content-Range"})
 
 (defn- get-default [key]
   (if (contains? env key) (read-string (env key)) (default-values key)))
 
-(defn- make-headers [interpolated-query result]
+(defn- config-file-cors-headers [key]
+  (case key
+    :cors-allow-origin   (get-in @config/config-data [:cors :allow-origin])
+    :cors-allow-methods  (get-in @config/config-data [:cors :allow-methods])
+    :cors-allow-headers  (get-in @config/config-data [:cors :allow-headers])
+    :cors-expose-headers (get-in @config/config-data [:cors :expose-headers])))
+
+(defn- get-from-config [key]
+  (let [val (config-file-cors-headers key)]
+    (if-not (nil? val)
+      val
+      (default-values key))))
+
+(defn- get-cors-headers [key]
+  (if (contains? env key)
+    (read-string (env key))
+    (get-from-config key)))
+
+(defn fetch-cors-headers []
+  {"Access-Control-Allow-Origin"   (get-cors-headers :cors-allow-origin)
+   "Access-Control-Allow-Methods"  (get-cors-headers :cors-allow-methods)
+   "Access-Control-Allow-Headers"  (get-cors-headers :cors-allow-headers)
+   "Access-Control-Expose-Headers" (get-cors-headers :cors-expose-headers)})
+
+(defn- get-response-headers [interpolated-query result]
   (-> (response-headers/get-response-headers interpolated-query result)
       (stringify-keys)))
 
@@ -68,7 +97,7 @@
 (defn- create-response [query result]
   (slingshot/try+
    {:body    (result-without-headers result)
-    :headers (make-headers query result)
+    :headers (get-response-headers query result)
     :status  (calculate-response-status-code result)}
    (catch Exception e (.printStackTrace e)
           (identify-error e))))
@@ -79,17 +108,18 @@
                                 :query query
                                 :query-opts query-opts))
 
-(defn- add-content-type [response]
+(defn- make-headers [response]
   (->> (:headers response)
        (stringify-keys)
-       (into {"Content-Type" "application/json"})))
+       (merge (fetch-cors-headers))
+       (merge {"Content-Type" "application/json"})))
 
 (defn- json-output
   "Creates a json output given it's status and body (message)"
   [response]
 
   {:status  (:status response)
-   :headers (add-content-type response)
+   :headers (make-headers response)
    :body    (json/generate-string (:body response))})
 
 (defn- get-error-msg [error]

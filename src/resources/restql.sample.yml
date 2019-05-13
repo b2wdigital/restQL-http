@@ -16,3 +16,9 @@ queries:
       - |
         use max-age=900
         from resource
+
+cors:
+  allow-origin: "xpto"
+  allow-methods: "GET,POST"
+  allow-headers: "User-Agent,Content-Type,Cache-control"
+  expose-headers: "Content-Length"

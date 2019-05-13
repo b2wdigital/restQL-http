@@ -5,10 +5,14 @@
             [clojure.core.async :refer [chan go >!]]
             [clojure.string :refer [includes?]]
             [environ.core :refer [env]]
+            [restql.config.core :as config]
             [restql.http.server.handler :as server-handler]
             [restql.http.query.handler :refer [parse]]
             [restql.http.request.queries :as request-queries]
             [restql.http.query.handler :as query-handler]))
+
+(defn- contains-many? [m & ks]
+  (every? #(contains? m %) ks))
 
 (deftest parsing-result-from-request
     (testing "Parse query should work for valid EDN"
@@ -64,3 +68,28 @@
                (-> {:params {:namespace "ns", :id "id", :rev "1"}}
                    (query-handler/adhoc)
                    (deref))))))))
+
+(deftest options-test
+  (testing "Options should return 204"
+    (is
+     (= 204
+        (get (query-handler/options {}) :status))))
+
+  (testing "Should have CORS headers"
+    (is
+     (= true
+        (contains-many? (get (query-handler/options {}) :headers) 
+                        "Access-Control-Allow-Origin"
+                        "Access-Control-Allow-Methods"
+                        "Access-Control-Allow-Headers"
+                        "Access-Control-Expose-Headers"))))
+  
+  (testing "Should follow CORS headers priority ENV > Config File > Default"
+    (reset! config/config-data {:cors {:allow-origin "xyz"
+                                       :allow-methods "GET"}})
+    (is 
+     (= {"Access-Control-Allow-Origin"  "abc"
+         "Access-Control-Allow-Methods" "GET"
+         "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+         "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
+        (get (query-handler/options {}) :headers)))))
