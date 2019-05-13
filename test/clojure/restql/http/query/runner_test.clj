@@ -25,7 +25,11 @@
     (let [json-output #'runner/json-output]
       (is (=
            {:status  200
-            :headers {"Content-Type" "application/json"}
+            :headers {"Content-Type" "application/json" 
+                      "Access-Control-Allow-Origin"   "abc"
+                      "Access-Control-Allow-Methods"  "GET, POST, PUT, PATH, DELETE, OPTIONS"
+                      "Access-Control-Allow-Headers"  "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+                      "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
             :body "{\"foo\":\"bar\"}"}
            (json-output {:status 200 :body {:foo "bar"}}))))))
 
