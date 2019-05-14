@@ -26,10 +26,10 @@
 
 (defn- config-file-cors-headers [key]
   (case key
-    :cors-allow-origin   (get-in @config/config-data [:cors :allow-origin])
-    :cors-allow-methods  (get-in @config/config-data [:cors :allow-methods])
-    :cors-allow-headers  (get-in @config/config-data [:cors :allow-headers])
-    :cors-expose-headers (get-in @config/config-data [:cors :expose-headers])))
+    :cors-allow-origin   (config/get-config [:cors :allow-origin])
+    :cors-allow-methods  (config/get-config [:cors :allow-methods])
+    :cors-allow-headers  (config/get-config [:cors :allow-headers])
+    :cors-expose-headers (config/get-config [:cors :expose-headers])))
 
 (defn- get-from-config [key]
   (let [val (config-file-cors-headers key)]
