@@ -4,6 +4,7 @@
    [compojure.core :as compojure :refer [GET POST OPTIONS]]
    [compojure.route :as route]
    [environ.core :refer [env]]
+   [restql.http.server.cors :as cors]
    [compojure.response :refer [Renderable]]
    [restql.http.query.handler :as query-handler]
    [restql.http.server.exception-handler :refer [wrap-exception-handling]]))
@@ -22,6 +23,11 @@
     query-handler/adhoc
     {:status 405 :headers {"Content-Type" "application/json"} :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}))
 
+(defn options [req]
+  {:status 204 :headers (cors/fetch-cors-headers)})
+
+(def adhoc-wrap (check-allow-adhoc))
+
 (def handler
   (-> (compojure/routes
        (GET  "/health"                        [] "I'm healthy! :)")
@@ -30,7 +36,7 @@
        (POST "/run-query"                     [] get-adhoc-behaviour)
        (POST "/parse-query"                   [] query-handler/parse)
        (POST "/validate-query"                [] query-handler/validate)
-       (OPTIONS "*"                           [] query-handler/options)
+       (OPTIONS "*"                           [] options)
        (route/not-found                       "There is nothing here. =/"))
       (wrap-exception-handling)
       (params/wrap-params)))

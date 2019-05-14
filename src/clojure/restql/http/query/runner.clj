@@ -6,6 +6,7 @@
             [environ.core :refer [env]]
             [restql.config.core :as config]            
             [slingshot.slingshot :as slingshot]
+            [restql.http.server.cors :as cors]
             [restql.http.query.headers :as headers]
             [restql.http.query.calculate-response-status-code :refer [calculate-response-status-code]]
             [restql.http.query.mappings :as mappings]
@@ -15,38 +16,10 @@
             [restql.core.encoders.core :as encoders]))
 
 (def default-values {:query-global-timeout 30000
-                     :max-query-overhead-ms 50
-                     :cors-allow-origin   "*"
-                     :cors-allow-methods  "GET, POST, PUT, PATH, DELETE, OPTIONS"
-                     :cors-allow-headers  "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
-                     :cors-expose-headers "Content-Length,Content-Range"})
+                     :max-query-overhead-ms 50})
 
 (defn- get-default [key]
   (if (contains? env key) (read-string (env key)) (default-values key)))
-
-(defn- config-file-cors-headers [key]
-  (case key
-    :cors-allow-origin   (config/get-config [:cors :allow-origin])
-    :cors-allow-methods  (config/get-config [:cors :allow-methods])
-    :cors-allow-headers  (config/get-config [:cors :allow-headers])
-    :cors-expose-headers (config/get-config [:cors :expose-headers])))
-
-(defn- get-from-config [key]
-  (let [val (config-file-cors-headers key)]
-    (if-not (nil? val)
-      val
-      (default-values key))))
-
-(defn- get-cors-headers [key]
-  (if (contains? env key)
-    (read-string (env key))
-    (get-from-config key)))
-
-(defn fetch-cors-headers []
-  {"Access-Control-Allow-Origin"   (get-cors-headers :cors-allow-origin)
-   "Access-Control-Allow-Methods"  (get-cors-headers :cors-allow-methods)
-   "Access-Control-Allow-Headers"  (get-cors-headers :cors-allow-headers)
-   "Access-Control-Expose-Headers" (get-cors-headers :cors-expose-headers)})
 
 (defn- get-response-headers [interpolated-query result]
   (-> (response-headers/get-response-headers interpolated-query result)
@@ -111,7 +84,7 @@
 (defn- make-headers [response]
   (->> (:headers response)
        (stringify-keys)
-       (merge (fetch-cors-headers))
+       (merge (cors/fetch-cors-headers))
        (merge {"Content-Type" "application/json"})))
 
 (defn- json-output

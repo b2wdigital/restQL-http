@@ -1,15 +1,6 @@
-(ns restql.http.query.headers
-  (:require [clojure.string :as str]
-            [environ.core :refer [env]]
+(ns restql.http.server.cors
+  (:require [environ.core :refer [env]]
             [restql.config.core :as config]))
-
-(def headers-blacklist
-  ["host"
-   "content-type"
-   "content-length"
-   "connection"
-   "origin"
-   "accept-encoding"])
 
 (def default-values {:cors-allow-origin   "*"
                      :cors-allow-methods  "GET, POST, PUT, PATH, DELETE, OPTIONS"
@@ -42,20 +33,3 @@
    "Access-Control-Allow-Methods"  (get-cors-headers :cors-allow-methods)
    "Access-Control-Allow-Headers"  (get-cors-headers :cors-allow-headers)
    "Access-Control-Expose-Headers" (get-cors-headers :cors-expose-headers)})
-
-(defn- headers-from-req-info [req-info]
-  (->> req-info
-       (reduce (fn [headers [key val]] (if (= key :type)
-                                         (merge headers {(str "restql-query-control") (name val)})
-                                         (merge headers {(str "restql-query-" (name key)) (str val)}))) {})))
-
-(defn- req-and-query-headers [req-info req]
-  (-> req-info
-      (headers-from-req-info)
-      (into (:headers req))))
-
-(defn header-allowed
-  "Filter to verify if the given header (k) is not on the headers-blacklist"
-  [req-info req]
-
-  (apply dissoc (req-and-query-headers req-info req) headers-blacklist))

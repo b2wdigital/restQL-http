@@ -73,12 +73,12 @@
   (testing "Options should return 204"
     (is
      (= 204
-        (get (query-handler/options {}) :status))))
+        (get (server-handler/options {}) :status))))
 
   (testing "Should have CORS headers"
     (is
      (= true
-        (contains-many? (get (query-handler/options {}) :headers) 
+        (contains-many? (get (server-handler/options {}) :headers) 
                         "Access-Control-Allow-Origin"
                         "Access-Control-Allow-Methods"
                         "Access-Control-Allow-Headers"
@@ -92,4 +92,4 @@
          "Access-Control-Allow-Methods" "GET"
          "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
          "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
-        (get (query-handler/options {}) :headers)))))
+        (get (server-handler/options {}) :headers)))))
