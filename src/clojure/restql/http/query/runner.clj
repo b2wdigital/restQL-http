@@ -14,7 +14,7 @@
             [restql.core.encoders.core :as encoders]))
 
 (def default-values {:query-global-timeout 30000
-                     :go-routine-start-execution-timeout 50})
+                     :max-query-overhead-ms 50})
 
 (defn- get-default [key]
   (if (contains? env key) (read-string (env key)) (default-values key)))
@@ -107,7 +107,7 @@
          {:status 507 :headers {"Content-Type" "application/json"} :body "{\"error\":\"START_EXECUTION_TIMEOUT\"}"}))))
 
 (defn run [query-string query-opts context]
-  (timed-go (get-default :go-routine-start-execution-timeout)
+  (timed-go (get-default :max-query-overhead-ms)
             (slingshot/try+
              (let [time-before             (System/currentTimeMillis)
                    parsed-context          (map-values parse-param-value context)
