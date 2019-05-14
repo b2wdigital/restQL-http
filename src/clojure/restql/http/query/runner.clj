@@ -82,7 +82,7 @@
                                 :query-opts query-opts))
 
 (defn- make-headers [response]
-  (->> (:headers response)
+  (->> (headers/filter-error-headers response)
        (stringify-keys)
        (merge (cors/fetch-cors-headers))
        (merge {"Content-Type" "application/json"})))

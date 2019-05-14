@@ -40,6 +40,7 @@
                                  :mappings-cache-ttl "60000"
                                  :cards     "http://api.magicthegathering.io/v1/cards"
                                  :card      "http://api.magicthegathering.io/v1/cards/:id"
-                                 :planets   "https://swapi.co/api/planets/:id"}
+                                 :planets   "https://swapi.co/api/planets/:id"
+                                 :http-test "http://httpstat.us/:status"}
                        :plugins [[lein-cloverage "1.0.9"]]}})
 

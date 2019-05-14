@@ -44,3 +44,12 @@
       (is (=
            {:status 500 :body "internal server error"}
            (identify-error {:type :unknown}))))))
+
+(deftest remove-error-cache-control-test
+  (let [json-output #'runner/json-output]
+    (testing "Status 200 should have cache-control header"
+      (is (= true
+             (contains? (:headers (json-output {:body {}, :headers {"cache-control" "max-age=600"}, :status 200})) "cache-control"))))
+    (testing "Any status other than 200 should not have cache-control header"
+      (is (= false
+             (contains? (:headers (json-output {:body {}, :headers {"cache-control" "max-age=600"}, :status 500})) "cache-control"))))))

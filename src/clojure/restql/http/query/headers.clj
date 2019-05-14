@@ -43,6 +43,9 @@
    "Access-Control-Allow-Headers"  (get-cors-headers :cors-allow-headers)
    "Access-Control-Expose-Headers" (get-cors-headers :cors-expose-headers)})
 
+(def error-headers-blacklist
+  ["cache-control"])
+
 (defn- headers-from-req-info [req-info]
   (->> req-info
        (reduce (fn [headers [key val]] (if (= key :type)
@@ -59,3 +62,8 @@
   [req-info req]
 
   (apply dissoc (req-and-query-headers req-info req) headers-blacklist))
+
+(defn filter-error-headers [response]
+  (if (= 200 (:status response))
+    (:headers response)
+    (apply dissoc (:headers response) error-headers-blacklist)))
