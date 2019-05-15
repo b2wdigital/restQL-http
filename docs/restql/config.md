@@ -14,6 +14,10 @@
 - `CACHE_TTL` allows you to specify the *time to leave*, in milliseconds, to be used to cache the parse of Saved Queries (default is `60000`)
 - `CACHE-COUNT` allows you to specify the number of items stored in cache (default is `2000`)
 - `MAPPINGS_CACHE_TTL` allows you to specify the *time to leave*, in milliseconds, to be used to cache Resources Mappings URLs (default is `60000`)
+- `CORS_ALLOW_ORIGIN` allows you to set the `Access-Control-Allow-Origin` CORS configuration (default is `"*"`)
+- `CORS_ALLOW_METHODS` allows you to set the `Access-Control-Allow-Methods` CORS configuration (default is `"GET, POST, PUT, PATH, DELETE, OPTIONS"`)
+- `CORS_ALLOW_HEADERS` allows you to set the `Access-Control-Allow-Headers` CORS configuration (default is `"DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"`)
+- `CORS_EXPOSE_HEADERS` allows you to set the `Access-Control-Expose-Headers` CORS configuration (default is `"Content-Length,Content-Range"`)
 - `TENANT` allows you to choose the tenant which contains your resources
 - `ALLOW-ADHOC-QUERIES` if set to `false`, blocks the execution of adhoc queries (via POST HTTP mehtod), useful for performance (default is `true`)
 - `RESTQL-CONFIG-FILE` allows you to change the name of the YAML configuration file. Note that it still needs to be located at the `src/resources/` folder (default is `restql.yml`)
@@ -53,6 +57,12 @@ queries:
       - |
         use max-age=900
         from your-resource
+
+cors:
+  allow_origin: "*"
+  allow_methods: "GET, POST, PUT, PATH, DELETE, OPTIONS"
+  allow_headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+  expose_headers: "Content-Length,Content-Range"
 ```
 
 ### Via a mongoDB collection:
@@ -81,3 +91,30 @@ This is very straight forward, simply run:
 ```shell
 planets=https://swapi.co/api/planets/:id ./bin/run.sh
 ```
+
+## CORS Headers Configuration
+
+Cross-Origin Resource Sharing - CORS, for short - is a specification that enables truly open access across domain-boundaries.
+You can configure your own CORS headers either via the `restql.yml` config file or via environment variables.
+CORS options follows the precedence `Environment > Config File > Default`.
+
+### Via an environment variable:
+
+```bash
+CORS_ALLOW_ORIGIN=${allowed_custom_origin}
+CORS_ALLOW_METHODS=${allowed_custom_methods}
+CORS_ALLOW_HEADERS=${allowed_custom_headers}
+CORS_EXPOSE_HEADERS=${allowed_custom_expose_headers}
+```
+
+### Via the configuration file:
+
+```yaml
+cors:
+    allow_origin: ${allowed_custom_origin}
+    allow_methods: ${allowed_custom_methods}
+    allow_headers: ${allowed_custom_headers}
+    expose_headers: ${allowed_custom_expose_headers}
+```
+
+You can check the CORS headers in your application by making an `OPTIONS` HTTP request to any restQL endpoint.
