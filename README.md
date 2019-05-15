@@ -1,6 +1,6 @@
 <p align="center">
   <a href="http://restql.b2w.io">
-    <img width="172px" height="193px" alt="restQL" src="./doc/assets/images/logo.svg?sanitize=true">
+    <img width="537px" height="180px" alt="restQL" src="./doc/assets/images/logo-text.png?sanitize=true">
   </a>
 </p>
 
