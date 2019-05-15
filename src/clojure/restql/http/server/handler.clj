@@ -26,8 +26,6 @@
 (defn options [req]
   {:status 204 :headers (cors/fetch-cors-headers)})
 
-(def adhoc-wrap (check-allow-adhoc))
-
 (def handler
   (-> (compojure/routes
        (GET  "/health"                        [] "I'm healthy! :)")
