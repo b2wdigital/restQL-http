@@ -4,9 +4,9 @@
             [slingshot.slingshot :refer [throw+]]
             [clojure.core.async :refer [chan go >!]]
             [clojure.string :refer [includes?]]
-            [environ.core :refer [env]]
             [restql.config.core :as config]
             [restql.http.server.handler :as server-handler]
+            [restql.http.server.cors :as cors]
             [restql.http.query.handler :refer [parse]]
             [restql.http.request.queries :as request-queries]
             [restql.http.query.handler :as query-handler]))
@@ -92,4 +92,14 @@
          "Access-Control-Allow-Methods" "GET"
          "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
          "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
-        (get (server-handler/options {}) :headers)))))
+        (get (server-handler/options {}) :headers)))
+    
+    (reset! config/config-data {}))
+  
+  (testing "Should not add empty / null CORS headers"    
+    (with-redefs-fn {#'cors/get-from-env (fn [key] "")}
+      #(is
+        (= {"Access-Control-Allow-Methods" "GET, POST, PUT, PATH, DELETE, OPTIONS"
+            "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
+           (get (server-handler/options {}) :headers))))))

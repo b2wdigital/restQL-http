@@ -7,29 +7,40 @@
                      :cors-allow-headers  "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
                      :cors-expose-headers "Content-Length,Content-Range"})
 
-(defn- get-default [key]
-  (if (contains? env key) (read-string (env key)) (default-values key)))
+(defn- get-from-env [key]
+  (let [val (env key)]
+    (if (empty? val)
+      ""
+      (read-string val))))
 
 (defn- config-file-cors-headers [key]
   (case key
     :cors-allow-origin   (config/get-config [:cors :allow-origin])
     :cors-allow-methods  (config/get-config [:cors :allow-methods])
     :cors-allow-headers  (config/get-config [:cors :allow-headers])
-    :cors-expose-headers (config/get-config [:cors :expose-headers])))
+    :cors-expose-headers (config/get-config [:cors :expose-headers])
+    ""))
 
 (defn- get-from-config [key]
   (let [val (config-file-cors-headers key)]
-    (if-not (nil? val)
-      val
-      (default-values key))))
+    (if (empty? val)
+      (default-values key)
+      val)))
 
 (defn- get-cors-headers [key]
   (if (contains? env key)
-    (read-string (env key))
+    (get-from-env key)
     (get-from-config key)))
 
+(defn- assoc-existing-header [map header-name key]
+  (let [val (get-cors-headers key)]
+    (if (empty? val)
+      map
+      (assoc map header-name val))))
+
 (defn fetch-cors-headers []
-  {"Access-Control-Allow-Origin"   (get-cors-headers :cors-allow-origin)
-   "Access-Control-Allow-Methods"  (get-cors-headers :cors-allow-methods)
-   "Access-Control-Allow-Headers"  (get-cors-headers :cors-allow-headers)
-   "Access-Control-Expose-Headers" (get-cors-headers :cors-expose-headers)})
+  (-> {}
+      (assoc-existing-header "Access-Control-Allow-Origin" :cors-allow-origin)
+      (assoc-existing-header "Access-Control-Allow-Methods" :cors-allow-methods)
+      (assoc-existing-header "Access-Control-Allow-Headers" :cors-allow-headers)
+      (assoc-existing-header "Access-Control-Expose-Headers" :cors-expose-headers)))
