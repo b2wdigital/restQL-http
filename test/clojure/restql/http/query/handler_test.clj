@@ -86,10 +86,9 @@
   
   (testing "Should follow CORS headers priority ENV > Config File > Default"
     (reset! config/config-data {:cors {:allow-origin "xyz"
-                                       :allow-methods "GET"}})
+                                       :allow-methods ""}})
     (is 
      (= {"Access-Control-Allow-Origin"  "abc"
-         "Access-Control-Allow-Methods" "GET"
          "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
          "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
         (get (server-handler/options {}) :headers)))

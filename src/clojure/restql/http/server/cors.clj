@@ -23,9 +23,10 @@
 
 (defn- get-from-config [key]
   (let [val (config-file-cors-headers key)]
-    (if (empty? val)
-      (default-values key)
-      val)))
+    (cond
+      (nil? val)   (default-values key)
+      (empty? val) "" 
+      :else        val)))
 
 (defn- get-cors-headers [key]
   (if (contains? env key)

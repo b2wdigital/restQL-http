@@ -32,17 +32,6 @@
       val
       (default-values key))))
 
-(defn- get-cors-headers [key]
-  (if (contains? env key)
-    (read-string (env key))
-    (get-from-config key)))
-
-(defn fetch-cors-headers []
-  {"Access-Control-Allow-Origin"   (get-cors-headers :cors-allow-origin)
-   "Access-Control-Allow-Methods"  (get-cors-headers :cors-allow-methods)
-   "Access-Control-Allow-Headers"  (get-cors-headers :cors-allow-headers)
-   "Access-Control-Expose-Headers" (get-cors-headers :cors-expose-headers)})
-
 (def error-headers-blacklist
   ["cache-control"])
 

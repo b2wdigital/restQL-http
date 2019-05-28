@@ -20,13 +20,24 @@
              (get-from-env :cors-allow-origin)))))))
 
 (deftest get-from-config-test
-  (testing "Should follow CORS headers priority ENV > Config File > Default"
+  (testing "Should get value from config"
     (reset! config/config-data {:cors {:allow-origin "xyz"}})
     
     (with-redefs-fn {#'environ.core/env (fn [key] nil)}
       #(let [get-from-config #'cors/get-from-config]
          (is
           (= "xyz"
+             (get-from-config :cors-allow-origin)))))
+
+    (reset! config/config-data {}))
+  
+  (testing "Should set empty value to empty string"
+    (reset! config/config-data {:cors {:allow-origin ""}})
+
+    (with-redefs-fn {#'environ.core/env (fn [key] nil)}
+      #(let [get-from-config #'cors/get-from-config]
+         (is
+          (= ""
              (get-from-config :cors-allow-origin)))))
 
     (reset! config/config-data {})))
