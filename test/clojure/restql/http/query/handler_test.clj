@@ -5,6 +5,7 @@
             [clojure.core.async :refer [chan go >!]]
             [clojure.string :refer [includes?]]
             [restql.config.core :as config]
+            [environ.core :refer [env]]
             [restql.http.server.handler :as server-handler]
             [restql.http.server.cors :as cors]
             [restql.http.query.handler :refer [parse]]
@@ -96,7 +97,9 @@
     (reset! config/config-data {}))
   
   (testing "Should not add empty / null CORS headers"    
-    (with-redefs-fn {#'cors/get-from-env (fn [key] "")}
+    (with-redefs-fn {#'cors/get-from (fn [function key] (if (= function env) (case key
+                                                                               :cors-allow-origin ""
+                                                                               (if-let [val (env key)] (read-string val) nil))))}
       #(is
         (= {"Access-Control-Allow-Methods" "GET, POST, PUT, PATH, DELETE, OPTIONS"
             "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
