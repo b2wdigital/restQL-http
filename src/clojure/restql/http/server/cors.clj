@@ -27,15 +27,14 @@
     (some? (get-from config-file-cors-headers key)) (get-from config-file-cors-headers key)
     :else (default-values key)))
 
-(defn- assoc-header-if-not-empty [map header-name key]
-  (let [val (get-value-from-env-or-config key)]
-    (if (empty? val)
-      map
-      (assoc map header-name val))))
+(defn- assoc-header-if-not-empty [map header-name value]
+  (if (empty? value)
+    map
+    (assoc map header-name value)))
 
 (defn fetch-cors-headers []
   (-> {}
-      (assoc-header-if-not-empty "Access-Control-Allow-Origin" :cors-allow-origin)
-      (assoc-header-if-not-empty "Access-Control-Allow-Methods" :cors-allow-methods)
-      (assoc-header-if-not-empty "Access-Control-Allow-Headers" :cors-allow-headers)
-      (assoc-header-if-not-empty "Access-Control-Expose-Headers" :cors-expose-headers)))
+      (assoc-header-if-not-empty "Access-Control-Allow-Origin"   (get-value-from-env-or-config :cors-allow-origin))
+      (assoc-header-if-not-empty "Access-Control-Allow-Methods"  (get-value-from-env-or-config :cors-allow-methods))
+      (assoc-header-if-not-empty "Access-Control-Allow-Headers"  (get-value-from-env-or-config :cors-allow-headers))
+      (assoc-header-if-not-empty "Access-Control-Expose-Headers" (get-value-from-env-or-config :cors-expose-headers))))

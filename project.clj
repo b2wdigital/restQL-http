@@ -34,7 +34,7 @@
                        :env {:port      "9000"
                              :cache-ttl "30000"}}
              :test    {:env {:max-query-overhead-ms 500
-                             :cors-allow-origin "abc"}}
+                             :cors-allow-origin "http://www.example.com"}}
              :dev     {:env     {:port      "9000"
                                  :cache-ttl "30000"
                                  :mappings-cache-ttl "60000"
