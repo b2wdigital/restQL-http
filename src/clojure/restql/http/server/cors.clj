@@ -14,18 +14,11 @@
     :cors-allow-headers  (config/get-config [:cors :allow-headers])
     :cors-expose-headers (config/get-config [:cors :expose-headers])))
 
-(defn- get-from [function key]
-  (let [val (function key)]
-    (cond
-      (nil? val)   nil
-      (empty? val) ""
-      :else        val)))
-
 (defn- get-value-from-env-or-config [key]
-  (cond
-    (some? (get-from env key)) (get-from env key)
-    (some? (get-from config-file-cors-headers key)) (get-from config-file-cors-headers key)
-    :else (default-values key)))
+  (->
+   (env key)
+   (as-> value (if (some? value) value (config-file-cors-headers key)))
+   (as-> value (if (some? value) value (default-values key)))))
 
 (defn- assoc-header-if-not-empty [map header-name value]
   (if (empty? value)

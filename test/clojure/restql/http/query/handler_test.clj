@@ -87,21 +87,24 @@
   
   (testing "Should follow CORS headers priority ENV > Config File > Default"
     (reset! config/config-data {:cors {:allow-origin "http://www.another.example.com"
-                                       :allow-methods ""}})
+                                       :allow-methods "GET,POST"}})
     (is 
      (= {"Access-Control-Allow-Origin"  "http://www.example.com"
+         "Access-Control-Allow-Methods" "GET,POST"
          "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
          "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
         (get (server-handler/options {}) :headers)))
     
     (reset! config/config-data {}))
   
-  (testing "Should not add empty / null CORS headers"    
-    (with-redefs-fn {#'cors/get-from (fn [function key] (if (= function env) (case key
-                                                                               :cors-allow-origin ""
-                                                                               (if-let [val (env key)] (read-string val) nil))))}
-      #(is
-        (= {"Access-Control-Allow-Methods" "GET, POST, PUT, PATH, DELETE, OPTIONS"
-            "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
-            "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
-           (get (server-handler/options {}) :headers))))))
+  (testing "Should not add empty / null CORS headers"
+    (reset! config/config-data {:cors {:allow-origin "http://www.another.example.com"
+                                       :allow-methods ""}})
+
+    (is
+     (= {"Access-Control-Allow-Origin"  "http://www.example.com"
+         "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+         "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
+        (get (server-handler/options {}) :headers))))
+
+    (reset! config/config-data {}))

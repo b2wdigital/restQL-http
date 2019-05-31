@@ -7,30 +7,27 @@
 (deftest environment-cors-test
   (testing "Should transform empty environment variable into empty strings"
     (with-redefs-fn {#'environ.core/env (fn [key] "")}
-      #(let [get-from #'cors/get-from
-             env      #'environ.core/env]
+      #(let [env      #'environ.core/env]
          (is
           (= ""
-             (get-from env :cors-allow-origin))))))
+             (env :cors-allow-origin))))))
   
   (testing "Should transform null environment variable into empty strings"
     (with-redefs-fn {#'environ.core/env (fn [key] nil)}
-      #(let [get-from #'cors/get-from
-             env      #'environ.core/env]
+      #(let [env      #'environ.core/env]
          (is
           (= nil
-             (get-from env :cors-allow-origin)))))))
+             (env :cors-allow-origin)))))))
 
 (deftest get-from-config-test
   (testing "Should get value from config"
     (reset! config/config-data {:cors {:allow-origin "http://www.another.example.com"}})
     
     (with-redefs-fn {#'environ.core/env (fn [key] nil)}
-      #(let [get-from #'cors/get-from 
-             config-file-cors-headers #'cors/config-file-cors-headers]
+      #(let [config-file-cors-headers #'cors/config-file-cors-headers]
          (is
           (= "http://www.another.example.com"
-             (get-from config-file-cors-headers :cors-allow-origin)))))
+             (config-file-cors-headers :cors-allow-origin)))))
 
     (reset! config/config-data {}))
   
@@ -38,11 +35,10 @@
     (reset! config/config-data {:cors {:allow-origin ""}})
 
     (with-redefs-fn {#'environ.core/env (fn [key] nil)}
-      #(let [get-from #'cors/get-from
-             config-file-cors-headers #'cors/config-file-cors-headers]
+      #(let [config-file-cors-headers #'cors/config-file-cors-headers]
          (is
           (= ""
-             (get-from config-file-cors-headers :cors-allow-origin)))))
+             (config-file-cors-headers :cors-allow-origin)))))
 
     (reset! config/config-data {})))
 
