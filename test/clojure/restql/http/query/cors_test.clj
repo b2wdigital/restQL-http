@@ -23,22 +23,20 @@
   (testing "Should get value from config"
     (reset! config/config-data {:cors {:allow-origin "http://www.another.example.com"}})
     
-    (with-redefs-fn {#'environ.core/env (fn [key] nil)}
-      #(let [config-file-cors-headers #'cors/config-file-cors-headers]
-         (is
-          (= "http://www.another.example.com"
-             (config-file-cors-headers :cors-allow-origin)))))
+    (let [config-file-cors-headers #'cors/config-file-cors-headers]
+      (is
+       (= "http://www.another.example.com"
+          (config-file-cors-headers :cors-allow-origin))))
 
     (reset! config/config-data {}))
   
   (testing "Should set empty value to empty string"
     (reset! config/config-data {:cors {:allow-origin ""}})
 
-    (with-redefs-fn {#'environ.core/env (fn [key] nil)}
-      #(let [config-file-cors-headers #'cors/config-file-cors-headers]
-         (is
-          (= ""
-             (config-file-cors-headers :cors-allow-origin)))))
+    (let [config-file-cors-headers #'cors/config-file-cors-headers]
+      (is
+       (= ""
+          (config-file-cors-headers :cors-allow-origin))))
 
     (reset! config/config-data {})))
 
