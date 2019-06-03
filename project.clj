@@ -33,8 +33,7 @@
   :profiles {:uberjar {:aot :all
                        :env {:port      "9000"
                              :cache-ttl "30000"}}
-             :test    {:env {:max-query-overhead-ms 500
-                             :cors-allow-origin "http://www.example.com"}}
+             :test    {:env {:max-query-overhead-ms 500}}
              :dev     {:env     {:port      "9000"
                                  :cache-ttl "30000"
                                  :mappings-cache-ttl "60000"

@@ -83,28 +83,4 @@
                         "Access-Control-Allow-Origin"
                         "Access-Control-Allow-Methods"
                         "Access-Control-Allow-Headers"
-                        "Access-Control-Expose-Headers"))))
-  
-  (testing "Should follow CORS headers priority ENV > Config File > Default"
-    (reset! config/config-data {:cors {:allow-origin "http://www.another.example.com"
-                                       :allow-methods "GET,POST"}})
-    (is 
-     (= {"Access-Control-Allow-Origin"  "http://www.example.com"
-         "Access-Control-Allow-Methods" "GET,POST"
-         "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
-         "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
-        (get (server-handler/options {}) :headers)))
-    
-    (reset! config/config-data {}))
-  
-  (testing "Should not add empty / null CORS headers"
-    (reset! config/config-data {:cors {:allow-origin "http://www.another.example.com"
-                                       :allow-methods ""}})
-
-    (is
-     (= {"Access-Control-Allow-Origin"  "http://www.example.com"
-         "Access-Control-Allow-Headers" "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
-         "Access-Control-Expose-Headers" "Content-Length,Content-Range"}
-        (get (server-handler/options {}) :headers))))
-
-    (reset! config/config-data {}))
+                        "Access-Control-Expose-Headers")))))
