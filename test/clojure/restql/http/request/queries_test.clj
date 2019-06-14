@@ -7,14 +7,13 @@
 
 (deftest get-query-from-config-test
   (testing "Is getting from config data"
-    (reset! config/config-data {:queries {:my-namespace {:my-query ["my query version 1" "my query version 2"]}}})
-    (is
-     (= "my query version 1"
-        (get-query-from-config "my-namespace" "my-query" 1)))
-    (is
-     (= "my query version 2"
-        (get-query-from-config "my-namespace" "my-query" 2)))
-    (reset! config/config-data nil)))
+    (with-redefs [config/config-data {:config-file {:queries {:my-namespace {:my-query ["my query version 1" "my query version 2"]}}}}]
+      (is
+       (= "my query version 1"
+          (get-query-from-config "my-namespace" "my-query" 1)))
+      (is
+       (= "my query version 2"
+          (get-query-from-config "my-namespace" "my-query" 2))))))
 
 (deftest throw-exception-if-query-not-found
   (testing "Is throwing exception if nil returned"

@@ -5,7 +5,6 @@
             [clojure.core.async :refer [chan go >!]]
             [clojure.string :refer [includes?]]
             [restql.config.core :as config]
-            [environ.core :refer [env]]
             [restql.http.server.handler :as server-handler]
             [restql.http.server.cors :as cors]
             [restql.http.query.handler :refer [parse]]
@@ -27,13 +26,13 @@
 
 (deftest blocked-adhoc
   (testing ":allow-adhoc-queries environment variable is set to false should return 405"
-    (with-redefs [server-handler/get-default-value (fn [_] false)]
-                 (let [get-adhoc-behaviour #'server-handler/get-adhoc-behaviour]
-                   (is
-                    (= {:status 405
-                        :headers {"Content-Type" "application/json"}
-                        :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}
-                       (get-adhoc-behaviour {})))))))
+    (with-redefs [config/config-data {:env {:allow-adhoc-queries "false"}}]
+    (let [get-adhoc-behaviour #'server-handler/get-adhoc-behaviour]
+      (is
+       (= {:status 405
+           :headers {"Content-Type" "application/json"}
+           :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}
+          (get-adhoc-behaviour {})))))))
 
 (deftest test-query-no-found
   (testing "Is return for query not found"
@@ -77,10 +76,14 @@
         (get (server-handler/options {}) :status))))
 
   (testing "Should have CORS headers"
+    (with-redefs [config/config-data {:default {:cors-allow-origin       "*"
+                                                :cors-allow-methods      "GET, POST, PUT, PATH, DELETE, OPTIONS"
+                                                :cors-allow-headers      "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+                                                :cors-expose-headers     "Content-Length,Content-Range"}}]
     (is
      (= true
-        (contains-many? (get (server-handler/options {}) :headers) 
+        (contains-many? (get (server-handler/options {}) :headers)
                         "Access-Control-Allow-Origin"
                         "Access-Control-Allow-Methods"
                         "Access-Control-Allow-Headers"
-                        "Access-Control-Expose-Headers")))))
+                        "Access-Control-Expose-Headers"))))))

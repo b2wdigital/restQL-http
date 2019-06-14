@@ -3,7 +3,7 @@
    [ring.middleware.params :as params]
    [compojure.core :as compojure :refer [GET POST OPTIONS]]
    [compojure.route :as route]
-   [environ.core :refer [env]]
+   [restql.config.core :as config]
    [restql.http.server.cors :as cors]
    [compojure.response :refer [Renderable]]
    [restql.http.query.handler :as query-handler]
@@ -13,13 +13,8 @@
   clojure.lang.IDeref
   (render [d _] (manifold.deferred/->deferred d)))
 
-(def default-value {:allow-adhoc-queries true})
-
-(defn- get-default-value [env-var]
-  (if (contains? env env-var) (read-string (env env-var)) (get default-value env-var)))
-
 (defn- get-adhoc-behaviour [req]
-  (if (true? (boolean (get-default-value :allow-adhoc-queries)))
+  (if (true? (boolean (config/get-config :allow-adhoc-queries)))
     query-handler/adhoc
     {:status 405 :headers {"Content-Type" "application/json"} :body "{\"error\":\"FORBIDDEN_OPERATION\",\"message\":\"ad-hoc queries are turned off\"}"}))
 

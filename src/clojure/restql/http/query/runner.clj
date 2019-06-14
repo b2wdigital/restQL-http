@@ -3,7 +3,6 @@
             [clojure.tools.logging :as log]
             [clojure.walk :refer [stringify-keys]]
             [restql.parser.json :as json]
-            [environ.core :refer [env]]
             [restql.config.core :as config]
             [slingshot.slingshot :as slingshot]
             [restql.http.server.cors :as cors]
@@ -14,12 +13,6 @@
             [restql.core.api.restql :as restql]
             [restql.core.response.headers :as response-headers]
             [restql.core.encoders.core :as encoders]))
-
-(def default-values {:query-global-timeout 30000
-                     :max-query-overhead-ms 50})
-
-(defn- get-default [key]
-  (if (contains? env key) (read-string (env key)) (default-values key)))
 
 (defn- get-response-headers [interpolated-query result]
   (-> (response-headers/get-response-headers interpolated-query result)
@@ -110,7 +103,7 @@
          {:status 507 :headers {"Content-Type" "application/json"} :body "{\"error\":\"START_EXECUTION_TIMEOUT\"}"}))))
 
 (defn run [query-string query-opts context]
-  (timed-go (get-default :max-query-overhead-ms)
+  (timed-go (config/get-config :max-query-overhead-ms)
             (slingshot/try+
              (let [time-before             (System/currentTimeMillis)
                    parsed-context          (map-values parse-param-value context)
@@ -119,7 +112,7 @@
                    mappings                (mappings/from-tenant (:tenant query-opts))
                    encoders                encoders/base-encoders
                    [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)
-                   timeout-ch              (async/timeout (get-default :query-global-timeout))]
+                   timeout-ch              (async/timeout (config/get-config :query-global-timeout))]
                (log/debug "query runner start with" {:query-string query-string
                                                      :query-opts query-opts
                                                      :context context})

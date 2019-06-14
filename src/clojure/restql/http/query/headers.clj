@@ -1,6 +1,5 @@
 (ns restql.http.query.headers
   (:require [clojure.string :as str]
-            [environ.core :refer [env]]
             [restql.config.core :as config]))
 
 (def headers-blacklist

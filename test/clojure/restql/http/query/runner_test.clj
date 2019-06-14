@@ -1,5 +1,6 @@
 (ns restql.http.query.runner-test
   (:require [clojure.test :refer :all]
+            [restql.config.core :as config]
             [restql.http.query.runner :as runner]))
 
 (deftest test-map-values

@@ -7,8 +7,7 @@
 (deftest get-mappings-from-tenant-test
   (testing "Is getting from config data"
     (let [get-mappings-from-config #'mappings/get-mappings-from-config]
-      (reset! config/config-data {:mappings {:test "test.com"}})
-      (is
-       (= {:test "test.com"}
-          (get-mappings-from-config)))
-      (reset! config/config-data nil))))
+      (with-redefs [config/config-data {:config-file {:mappings {:test "test.com"}}}]
+        (is
+         (= {:test "test.com"}
+            (get-mappings-from-config)))))))

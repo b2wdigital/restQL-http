@@ -1,6 +1,5 @@
 (ns restql.http.database.core
   (:require [restql.http.database.persistence :as db]
-            [environ.core :refer [env]]
             [clojure.edn :as edn]
             [restql.core.validator.core :as validator]
             [slingshot.slingshot :refer [throw+]]))

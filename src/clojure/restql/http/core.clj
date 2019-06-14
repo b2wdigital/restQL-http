@@ -3,17 +3,8 @@
             [restql.http.plugin.core :as plugin]
             [restql.http.database.persistence :as db]
             [restql.config.core :as config]
-            [clojure.tools.logging :as log]
-            [environ.core :refer [env]])
+            [clojure.tools.logging :as log])
   (:gen-class))
-
-(defn- from-env-or-defaut
-  ([name]
-   (from-env-or-defaut name nil))
-  ([name default]
-   (cond (contains? env name) (read-string (env name))
-         (not (nil? default)) default
-         :else nil)))
 
 (defn -main
   "Runs the restQL-server"
@@ -21,11 +12,10 @@
 
   (log/info "Starting the amazing restQL Server!")
 
-  (config/init! (:restql-config-file env))
-  (db/connect!  (env :mongo-url))
+  (db/connect!  (config/get-config :mongo-url))
   (plugin/load!)
 
-  (server/start! {:port                    (from-env-or-defaut :port 9000)
-                  :executor-utilization    (from-env-or-defaut :executor-utilization 0.5)
-                  :executor-max-threads    (from-env-or-defaut :executor-max-threads 512)
-                  :executor-control-period (from-env-or-defaut :executor-control-period 1000)}))
+  (server/start! {:port                    (config/get-config :port)
+                  :executor-utilization    (config/get-config :executor-utilization)
+                  :executor-max-threads    (config/get-config :executor-max-threads)
+                  :executor-control-period (config/get-config :executor-control-period)}))

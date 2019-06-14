@@ -1,15 +1,8 @@
 (ns restql.http.query.mappings
-  (:require [environ.core :refer [env]]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [restql.config.core :as config]
             [restql.http.database.core :as dbcore]
             [restql.http.cache.core :as cache]))
-
-(def default-value {:mappings-ttl 60000
-                    :tenant "DEFAULT"})
-
-(defn- get-default-value [env-var]
-  (if (contains? env env-var) (read-string (env env-var)) (get default-value env-var)))
 
 (defn- get-mappings-from-config []
   (->>
@@ -22,7 +15,7 @@
   (try
     (->
      tenant
-     (or (get-default-value :tenant))
+     (or (config/get-config :tenant))
      (dbcore/find-tenant-by-id)
      (:mappings))
     (catch Exception e
@@ -32,7 +25,7 @@
 (def from-tenant
   (->>
    (fn [tenant] (merge
-                  (get-mappings-from-config)
-                  (get-mappings-from-db tenant)
-                  env))
-   (cache/cached :ttl (get-default-value :mappings-ttl))))
+                 (get-mappings-from-config)
+                 (get-mappings-from-db tenant)
+                 (:env (config/get-config))))
+   (cache/cached :ttl (config/get-config :mappings-ttl))))

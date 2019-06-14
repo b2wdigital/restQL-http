@@ -3,7 +3,7 @@
             [clojure.tools.logging :as log]
             [clojure.walk :refer [keywordize-keys]]
             [manifold.stream :as manifold]
-            [environ.core :refer [env]]
+            [restql.config.core :as config]
             [slingshot.slingshot :as slingshot]
             [restql.core.validator.core :as validator]
             [restql.parser.core :as parser]
@@ -16,8 +16,8 @@
       (:_debug)
       boolean))
 
-(defn- tenant-from-env-or-query [env query-params]
-  (-> env
+(defn- tenant-from-config-data-or-query [config-data query-params]
+  (-> config-data
       (:tenant)
       (as-> tenant
             (if (nil? tenant)
@@ -29,8 +29,8 @@
   [prefix [k v]]
   (->> k str (re-find (re-pattern prefix))))
 
-(defn- forward-params-from-query [env query-params]
-  (-> env
+(defn- forward-params-from-query [config-data query-params]
+  (-> config-data
       (:forward-prefix)
       (as-> prefix
             (if (nil? prefix)
@@ -40,9 +40,9 @@
 (defn- req->query-opts [req-info req]
   (let [query-params (-> req :query-params keywordize-keys)]
     {:debugging      (debugging-from-query query-params)
-     :tenant         (tenant-from-env-or-query env query-params)
+     :tenant         (tenant-from-config-data-or-query (:env (config/get-config)) query-params)
      :info           req-info
-     :forward-params (forward-params-from-query env query-params)
+     :forward-params (forward-params-from-query (:env (config/get-config)) query-params)
      :forward-headers (headers/header-allowed req-info req)}))
 
 (defn- req->query-ctx [req]
@@ -71,7 +71,7 @@
     (async/go
       (slingshot/try+
        (let [query (parse req)]
-         (if (validator/validate {:mappings env} query)
+         (if (validator/validate {:mappings (:env (config/get-config))} query)
            {:status 200 :headers {"Content-Type" "application/json"} :body "valid"}))
        (catch [:type :validation-error] {:keys [message]}
          {:status 400 :headers {"Content-Type" "application/json"} :body (str "\"" message "\"")}))))))

@@ -1,6 +1,5 @@
 (ns restql.http.request.queries
-  (:require [environ.core :refer [env]]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [restql.config.core :as config]
             [restql.http.database.core :as dbcore]
             [restql.http.cache.core :as cache]
