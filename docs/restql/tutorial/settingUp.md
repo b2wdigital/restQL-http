@@ -14,8 +14,11 @@ Any value assigned to that a key in `mappings` should point to a valid API.
 ## Building Docker image
 
 restQL-http can also be ran as a Docker container.
-First, create the `restql.yml` at the `src/resources/` folder.
+First, create the `restql.yml` file and pass it's path via an `environment variable`.
 
+```shell
+-e JAVA_OPTS="-Drestql-config-file=restql.yml"
+```
 Then execute the build-dist script from the source code root folder:
 
 ```shell

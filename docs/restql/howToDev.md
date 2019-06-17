@@ -8,7 +8,11 @@ Simply clone our [project repository](https://github.com/B2W-BIT/restQL-http/).
 ### Building Docker image
 
 restQL-http can also be run as a Docker container.
-First, create the `restql.yml` at the `src/resources/` folder.
+First, create the `restql.yml` file and pass it's path via an `environment variable`.
+
+```shell
+-e JAVA_OPTS="-Drestql-config-file=restql.yml"
+```
 
 Then execute the build-dist script:
 
@@ -54,14 +58,14 @@ As prerequisites to build restQL-http from source we need:
 
 Build the server using the build script: `scripts/build-dist.sh`.  
 
-The building script will create a folder `dist` where you can configure your resources on the file `src/resources/restql.yml` and run the server using the script `dist/bin/run.sh`.
+The building script will create a folder `dist` where you can configure your resources on the `restql.yml` file and run the server using the script `dist/bin/run.sh`.
 
 If you want to deploy restQL-http, copy the files under the generated `dist` folder.
 
 ### Running the server
 To run the restQL-http follow the bellow steps from the source code root:
 
-1. Edit the file `src/resources/restql.yml` with the resources you want to invoke,
+1. Edit the `restql.yml` file with the resources you want to invoke,
 2. Run `dist/bin/run.sh`.
 
 Then you can test it, since restQL-http allows you to post ad-hoc queries and to reference resources pre-configured in the server startup (in the `restql.yml` file). Post to `http://<your-server>:9000/run-query` the following body:

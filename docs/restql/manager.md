@@ -179,6 +179,26 @@ Where:
 - link: the route to run the query saved for the given revision.
 - query: the route to retrieve the revision's saved query string.
 
+#### Retrieving All Revisions of a Saved Query
+
+The route `GET http://localhost:3000/ns/:namespace/:queryId`, given `queryId = cards`, will retrieve the imaginary query revisions:
+
+```json
+{
+  "namespace": "deck",
+  "queryName": "cards",
+  "revisionsCount": 2,
+  "revisions": [
+    {
+      "text": "from cards\n with suit = spades"
+    },
+    {
+      "text": "from cards\n timeout 5000\n with suit = hearts\n ignore-errors"
+    }
+  ]
+}
+```
+
 #### Retrieving Saved Queries String
 
 restQL-http has a route to retrieve the query string from a saved query, given a revision index.

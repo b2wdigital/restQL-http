@@ -22,9 +22,10 @@ restQL supports the most popular HTTP methods (GET, POST, PUT and DELETE).
 * **from** - HTTP GET
 * **to** - HTTP POST
 * **into** - HTTP PUT
+* **update** - HTTP PATCH
 * **delete** - HTTP DELETE
 
-In queries with `to` and `into`, the `with` params will be used as the body of request. For example:
+In queries with `to`, `into` and `update`, the `with` params will be used as the body of request. For example:
 
 ```restql
 to users
