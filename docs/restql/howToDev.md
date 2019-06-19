@@ -58,10 +58,10 @@ As prerequisites to build restQL-http from source we need:
 
 Build the server using the build script: `scripts/build-dist.sh`.  
 
-The building script will create a folder `dist` where you can configure your resources on the `restql.yml` file and run the server using the script `dist/bin/run.sh` with the `RESTQL-CONFIG-FILE` environment variable.
+The building script will create a folder `dist` where you can configure your resources on the `restql.yml` file and run the server using the script `dist/bin/run.sh` with the `RESTQL_CONFIG_FILE` environment variable.
 
 ```shell
-RESTQL-CONFIG-FILE="restql.yml" ./dist/bin/run.sh
+RESTQL_CONFIG_FILE="restql.yml" ./dist/bin/run.sh
 ```
 
 If you want to deploy restQL-http, copy the files under the generated `dist` folder.
