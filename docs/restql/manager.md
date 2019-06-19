@@ -181,7 +181,7 @@ Where:
 
 #### Retrieving All Revisions of a Saved Query
 
-The route `GET http://localhost:3000/ns/:namespace/:queryId`, given `queryId = cards`, will retrieve the imaginary query revisions:
+The route `GET http://localhost:3000/ns/:namespace/:queryId`, given `namespace=deck` and `queryId = cards`, will retrieve the imaginary query revisions:
 
 ```json
 {

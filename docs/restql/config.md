@@ -1,6 +1,6 @@
 # Configuration
 
-RestQL can be configured either via `Environment Variables` or trough a `Config File`.
+RestQL can be configured either via `Environment Variables` or through a `Config File`.
 Configuration options follows the precedence `Environment > Config File > Default`.
 
 ## Environment variables:
