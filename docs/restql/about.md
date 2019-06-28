@@ -24,7 +24,7 @@ Links:
 * [Tackling microservice query complexity](https://medium.com/b2w-engineering/restql-tackling-microservice-query-complexity-27def5d09b40): Project motivation and history
 * [@restQL](https://t.me/restQL): restQL Telegram Group
 * [restql.b2w.io](http://restql.b2w.io): Project home page,
-* [game.b2w.io](http://game.b2w.io): A game developed to teach the basics of restQL language,
+* [game.b2w.io](http://game.restql.b2w.io/): A game developed to teach the basics of restQL language,
 * [restQL-clojure](https://github.com/B2W-BIT/restQL-clojure): If you want to embed restQL directly into your Clojure application,
 * [restQL-java](https://github.com/B2W-BIT/restQL-java): If you want to embed restQL directly into your Java application,
 * [restQL-manager](https://github.com/B2W-BIT/restQL-manager): To manage saved queries and resources endpoints (requires a MongoDB instance).
