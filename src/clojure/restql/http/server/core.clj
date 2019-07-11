@@ -14,14 +14,14 @@
                      executor-utilization
                      executor-max-threads
                      executor-control-period]
-  (http/start-server handler
-                     {:port port
-                      :executor (flow/utilization-executor executor-utilization
-                                                           executor-max-threads
-                                                           {:metrics (EnumSet/of Stats$Metric/UTILIZATION)
-                                                            :control-period executor-control-period
-                                                            :initial-thread-count (/ executor-max-threads 2)
-                                                            :stats-callback stats-callback-fn})}))
+  (-> (hooks/execute-hook-pipeline :handler handler)
+      (http/start-server {:port port
+                          :executor (flow/utilization-executor executor-utilization
+                                                               executor-max-threads
+                                                               {:metrics (EnumSet/of Stats$Metric/UTILIZATION)
+                                                                :control-period executor-control-period
+                                                                :initial-thread-count (/ executor-max-threads 2)
+                                                                :stats-callback stats-callback-fn})})))
 
 (defonce server
   (atom nil))
