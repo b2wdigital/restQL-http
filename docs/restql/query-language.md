@@ -311,9 +311,9 @@ The query above will return a success HTTP status code even when the ratings res
 By default restQL returns the lowest cache-control value among the queried resources. If you'd like to fix a cache-control value in your query you can set the `use` modifier in the first statement of your the query. 
 
 ```restql
-use cache-control = 600
+use max-age = 600
 
 from products
 ```
 
-The query above will make restQL return an extra header `Cache-Control 600`, enabling a proxy to cache the request for 10 minutes (600 seconds).
+The query above will make restQL return an extra header `Cache-Control: max-age=600`, enabling a proxy to cache the request for 10 minutes (600 seconds).
