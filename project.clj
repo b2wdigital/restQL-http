@@ -1,4 +1,4 @@
-(defproject restql-http "v3.1.0" :description "restQL HTTP"
+(defproject restql-http "v3.2.0" :description "restQL HTTP"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url  "http://restql.b2w.io"}
