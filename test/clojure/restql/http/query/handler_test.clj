@@ -18,7 +18,7 @@
 (deftest parsing-result-from-request
     (testing "Parse query should work for valid EDN"
       (is
-       (= [:foo {:from :foo :method :get} :bazinga {:from :bar :with {:id "123"} :method :get}]
+       (= [:foo {:from :foo :method :get} :bazinga {:from :bar :with {:id 123} :method :get}]
           (:body (-> {:params {"id" 123}
                       :headers {}
                       :body "test/resources/sample_query.rql"}
@@ -48,15 +48,14 @@
   (testing "Is return for run-saved-query with exception"
     (let [error-ch (chan)]
       (go (>! error-ch "Some error"))
-      (with-redefs [request-queries/get-query (constantly {})
+      (with-redefs [request-queries/get-query (constantly "from bla")
                     restql.http.query.handler/parse (constantly {})
                     restql.core.api.restql/execute-query-channel (constantly [(chan) error-ch])]
         (let [result (-> {:params {:namespace "ns", :id "id", :rev "1"}}
                          (query-handler/saved)
                          (deref))]
           (is (= 500 (:status result)))
-          (is (= {"Content-Type" "application/json"} (:headers result)))
-          (is (includes? (:body result) "{\"error\":\"UNKNOWN_ERROR\",\"message\":"))))))
+          (is (includes? (:body result) "internal server error"))))))
 
   (testing "Is return for run-query with exception"
     (let [exception-ch (chan)]
@@ -64,9 +63,8 @@
       (with-redefs [parse (constantly {})
                     restql.core.api.restql/execute-query-channel (constantly [(chan) exception-ch])]
         (is (= {:status  500
-                :headers {"Content-Type" "application/json"}
-                :body    "{\"error\":\"UNKNOWN_ERROR\",\"message\":null}"}
-               (-> {:params {:namespace "ns", :id "id", :rev "1"}}
+                :body    "internal server error"}
+               (-> {:body "test/resources/sample_query.rql"}
                    (query-handler/adhoc)
                    (deref))))))))
 
@@ -79,7 +77,7 @@
   (testing "Should have CORS headers"
     (is
      (= true
-        (contains-many? (get (server-handler/options {}) :headers) 
+        (contains-many? (get (server-handler/options {}) :headers)
                         "Access-Control-Allow-Origin"
                         "Access-Control-Allow-Methods"
                         "Access-Control-Allow-Headers"

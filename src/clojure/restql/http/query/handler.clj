@@ -49,10 +49,10 @@
   (-> (:params req)
       (into (:headers req))))
 
-(defn parse 
+(defn parse
   ([req]
    (parse req false))
-  
+
   ([req pretty]
    (let [req-info {:type :parse-query}
          query-ctx (req->query-ctx req)
