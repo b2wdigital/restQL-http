@@ -264,7 +264,7 @@ from hero
 
 from sidekick in hero.sidekick
     with
-        hero = hero.sidekickId
+        id = hero.sidekickId
 ```
 
 The query above will be aggregated as the result bellow:
