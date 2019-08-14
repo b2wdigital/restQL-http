@@ -19,7 +19,6 @@ mkdir -p "$DIST_DIR/lib"
 cp "$LEIN_TARGET_DIR/uberjar/restql-http-standalone.jar" "$DIST_DIR/lib/restql-http.jar"
 cp "$SCRIPTS_DIR/run.sh" "$DIST_DIR/bin"
 cp "$SCRIPTS_DIR/prepare.sh" "$DIST_DIR/bin"
-cp "$SCRIPTS_DIR/env.sh" "$DIST_DIR/bin"
 cp "$SOURCE_CODE_DIR/LICENSE" "$DIST_DIR"
 cp "$SOURCE_CODE_DIR/README.md" "$DIST_DIR"
 

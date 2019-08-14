@@ -1,4 +1,7 @@
 language: clojure
+lein: 2.9.1
+jdk:
+  - openjdk11
 
 jobs:
   include:
@@ -34,4 +37,3 @@ jobs:
         - docker push b2wdigital/restql-http:latest
         - docker tag b2wdigital/restql-http:latest b2wdigital/restql-http:${DOCKER_TAG}
         - docker push b2wdigital/restql-http:${DOCKER_TAG}
- 
