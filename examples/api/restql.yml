@@ -1,0 +1,17 @@
+mappings:
+  launches: https://api.spacexdata.com/v3/launches/:flight_number
+
+queries:
+  spacex:
+    get-launch:
+      - |
+        from launches
+          with flight_number = $number
+      - |
+        from launches
+          with
+            flight_number = $number
+          only
+            rocket.rocket_name
+            rocket.second_stage.payloads.payload_type
+            rocket.second_stage.payloads.nationality
