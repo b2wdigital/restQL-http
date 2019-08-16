@@ -48,7 +48,9 @@
 (defn- assoc-item-details
   "Formats a response item"
   [item]
-  (assoc item :details (dissoc-headers-from-details (:details item))))
+  (if-let [details (:details item)]
+    (assoc item :details (dissoc-headers-from-details details))
+    item))
 
 (defn- result-without-headers
   "Formats the response body"
@@ -68,12 +70,14 @@
     value))
 
 (defn- create-response [query result]
-  (slingshot/try+
-   {:body    (result-without-headers result)
-    :headers (get-response-headers query result)
-    :status  (calculate-response-status-code result)}
-   (catch Exception e (.printStackTrace e)
-          (identify-error e))))
+  (if (= (:error result) :timeout)
+    {:status 408 :headers {"Content-Type" "application/json"} :body {"message" "Query timed out"}}
+    (slingshot/try+
+     {:body    (result-without-headers result)
+      :headers (get-response-headers query result)
+      :status  (calculate-response-status-code result)}
+     (catch Exception e (.printStackTrace e)
+            (identify-error e)))))
 
 (defn- execute-query [query mappings encoders query-opts]
   (restql/execute-query-channel :mappings mappings
@@ -118,16 +122,11 @@
                    parsed-query            (parser/parse-query query-string :context parsed-context :query-type query-type)
                    mappings                (mappings/from-tenant (:tenant query-opts))
                    encoders                encoders/base-encoders
-                   [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)
-                   timeout-ch              (async/timeout (get-default :query-global-timeout))]
+                   [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)]
                (log/debug "query runner start with" {:query-string query-string
                                                      :query-opts query-opts
                                                      :context context})
                (async/alt!
-                 timeout-ch ([]
-                             (log/warn "query runner timed out" {:time (- (System/currentTimeMillis) time-before)
-                                                                 :success false})
-                             {:status 408 :headers {"Content-Type" "application/json"} :body "{\"message\":\"Query timed out\"}"})
                  exception-ch ([err]
                                (log/warn "query runner with error" {:time (- (System/currentTimeMillis) time-before)
                                                                     :success false})
