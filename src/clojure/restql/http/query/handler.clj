@@ -9,7 +9,8 @@
             [restql.parser.core :as parser]
             [restql.http.query.headers :as headers]
             [restql.http.query.runner :as query-runner]
-            [restql.http.request.queries :as request-queries]))
+            [restql.http.request.queries :as request-queries]
+            [restql.hooks.core :as hooks]))
 
 (defn- debugging-from-query [query-params]
   (-> query-params
@@ -76,15 +77,23 @@
        (catch [:type :validation-error] {:keys [message]}
          {:status 400 :headers {"Content-Type" "application/json"} :body (str "\"" message "\"")}))))))
 
+(defn- create-context [query-opts query-ctx query-string]
+  (assoc {}
+         :query-opts query-opts
+         :query-ctx query-ctx
+         :query-string query-string))
+
 (defn adhoc [req]
   (slingshot/try+
    (let [req-info {:type :ad-hoc}
          query-opts (req->query-opts req-info req)
          query-ctx (req->query-ctx req)
-         query-string (some-> req :body slurp)]
+         query-string (some-> req :body slurp)
+         context (->> (create-context query-opts query-ctx query-string)
+                      (hooks/execute-hook :before-transaction))]
      (manifold/take!
       (manifold/->source
-       (query-runner/run query-string query-opts query-ctx))))
+       (query-runner/run context query-string query-opts query-ctx))))
    (catch Exception e (.printStackTrace e)
           {:status 500 :headers {"Content-Type" "application/json"} :body (str "{\"error\":\"UNKNOWN_ERROR\",\"message\":\"" (.getMessage e) "\"}")})))
 
@@ -96,10 +105,12 @@
                    :revision  (some-> req :params :rev read-string)}
          query-opts (req->query-opts req-info req)
          query-ctx (req->query-ctx req)
-         query-string (request-queries/get-query req-info)]
+         query-string (request-queries/get-query req-info)
+         context (->> (create-context query-opts query-ctx query-string)
+                      (hooks/execute-hook :before-transaction))]
      (manifold/take!
       (manifold/->source
-       (query-runner/run query-string query-opts query-ctx))))
+       (query-runner/run context query-string query-opts query-ctx))))
    (catch [:type :query-not-found] e
      {:status 404 :headers {"Content-Type" "application/json"} :body "{\"error\":\"QUERY_NOT_FOUND\"}"})
    (catch Exception e

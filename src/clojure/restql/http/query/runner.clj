@@ -79,8 +79,9 @@
      (catch Exception e (.printStackTrace e)
             (identify-error e)))))
 
-(defn- execute-query [query mappings encoders query-opts]
-  (restql/execute-query-channel :mappings mappings
+(defn- execute-query [context query mappings encoders query-opts]
+  (restql/execute-query-channel :context context
+                                :mappings mappings
                                 :encoders encoders
                                 :query query
                                 :query-opts query-opts))
@@ -113,16 +114,16 @@
          ~@args
          {:status 507 :headers {"Content-Type" "application/json"} :body "{\"error\":\"START_EXECUTION_TIMEOUT\"}"}))))
 
-(defn run [query-string query-opts context]
+(defn run [context query-string query-opts query-ctx]
   (timed-go (get-default :max-query-overhead-ms)
             (slingshot/try+
              (let [time-before             (System/currentTimeMillis)
-                   parsed-context          (map-values parse-param-value context)
+                   parsed-context          (map-values parse-param-value query-ctx)
                    query-type              (get-in query-opts [:info :type])
                    parsed-query            (parser/parse-query query-string :context parsed-context :query-type query-type)
                    mappings                (mappings/from-tenant (:tenant query-opts))
                    encoders                encoders/base-encoders
-                   [query-ch exception-ch] (execute-query parsed-query mappings encoders query-opts)]
+                   [query-ch exception-ch] (execute-query context parsed-query mappings encoders query-opts)]
                (log/debug "query runner start with" {:query-string query-string
                                                      :query-opts query-opts
                                                      :context context})
