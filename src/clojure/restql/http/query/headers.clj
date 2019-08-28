@@ -1,6 +1,5 @@
 (ns restql.http.query.headers
-  (:require [clojure.string :as str]
-            [environ.core :refer [env]]
+  (:require [environ.core :refer [env]]
             [restql.config.core :as config]))
 
 (def headers-blacklist
@@ -10,6 +9,16 @@
    "connection"
    "origin"
    "accept-encoding"])
+
+(defn- get-headers-blacklist-from-config []
+  (if-let [headers (config/get-config [:headers :blacklist])]
+    (clojure.string/split headers #",")
+    []))
+
+(defn- get-headers-blacklist-from-env []
+  (if-let [headers (env :headers-blacklist)]
+    (clojure.string/split headers #",")
+    []))
 
 (def error-headers-blacklist
   ["cache-control"])
@@ -28,8 +37,9 @@
 (defn header-allowed
   "Filter to verify if the given header (k) is not on the headers-blacklist"
   [req-info req]
-
-  (apply dissoc (req-and-query-headers req-info req) headers-blacklist))
+  (apply dissoc (req-and-query-headers req-info req) (vec (concat (get-headers-blacklist-from-config)
+                                                                  (get-headers-blacklist-from-env)
+                                                                  headers-blacklist))))
 
 (defn filter-error-headers [response]
   (if (= 200 (:status response))
