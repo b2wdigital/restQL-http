@@ -18,7 +18,9 @@
 (deftest parsing-result-from-request
     (testing "Parse query should work for valid EDN"
       (is
-       (= [:foo {:from :foo :method :get} :bazinga {:from :bar :with {:id 123} :method :get}]
+       (= (binding [*print-meta* true]
+            (pr-str
+             [:foo {:from :foo :method :get} :bazinga {:from :bar :method :get :with {:id 123}}]))
           (:body (-> {:params {"id" 123}
                       :headers {}
                       :body "test/resources/sample_query.rql"}

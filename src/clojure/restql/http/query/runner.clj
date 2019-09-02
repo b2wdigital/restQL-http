@@ -114,13 +114,16 @@
          ~@args
          {:status 507 :headers {"Content-Type" "application/json"} :body "{\"error\":\"START_EXECUTION_TIMEOUT\"}"}))))
 
+(defn parse [query-string query-opts query-ctx]
+  (let [parsed-context (map-values parse-param-value query-ctx)
+        query-type     (get-in query-opts [:info :type])]
+    (parser/parse-query query-string :context parsed-context :query-type query-type)))
+
 (defn run [context query-string query-opts query-ctx]
   (timed-go (get-default :max-query-overhead-ms)
             (slingshot/try+
              (let [time-before             (System/currentTimeMillis)
-                   parsed-context          (map-values parse-param-value query-ctx)
-                   query-type              (get-in query-opts [:info :type])
-                   parsed-query            (parser/parse-query query-string :context parsed-context :query-type query-type)
+                   parsed-query            (parse query-string query-opts query-ctx)
                    mappings                (mappings/from-tenant (:tenant query-opts))
                    encoders                encoders/base-encoders
                    [query-ch exception-ch] (execute-query context parsed-query mappings encoders query-opts)]

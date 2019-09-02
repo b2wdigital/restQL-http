@@ -50,19 +50,25 @@
   (-> (:params req)
       (into (:headers req))))
 
+(defn- map-values [f m]
+  (reduce-kv (fn [r k v] (assoc r k (f v))) {} m))
+
 (defn parse
   ([req]
    (parse req false))
 
   ([req pretty]
    (let [req-info {:type :parse-query}
+         query-opts (req->query-opts req-info req)
          query-ctx (req->query-ctx req)
          query-string (some-> req :body slurp)]
      (manifold/take!
       (manifold/->source
        (async/go
          (slingshot/try+
-          {:status 200 :body (parser/parse-query query-string :pretty pretty :context query-ctx)}
+          {:status 200 :body (binding [*print-meta* true]
+                               (pr-str
+                                (query-runner/parse query-string query-opts query-ctx)))}
           (catch [:type :parse-error] {:keys [line column reason]}
             {:status 400 :body (str "Parsing error in line " line ", column " column "\n" reason)}))))))))
 
