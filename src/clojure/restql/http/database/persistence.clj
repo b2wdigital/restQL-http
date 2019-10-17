@@ -11,7 +11,7 @@
   "Connects to the MongoDB"
   [uri]
   (if (nil? uri)
-    (log/info "Skiping connection with MongoDB: db url is not setted")
+    (log/info "Skipping connection with MongoDB: db url is not set")
     (when (nil? @conn-data)
       (do (log/info "Connecting to MongoDB:" uri)
           (reset! conn-data (mg/connect-via-uri uri))))))
