@@ -16,7 +16,7 @@ Post to http://your-server.ip:9000/run-query the body below and content-type tex
 curl -d "from planets as allPlanets" -H "Content-Type: text/plain" localhost:9000/run-query 
 ```
 
-If you want to know more about the **query language**, [click here](/restql/queryLang.md)
+If you want to know more about the **query language**, [click here](/restql/query-language.md)
 
 ## Your first query
 
@@ -76,6 +76,6 @@ from which you get the response:
 
 ## Next steps
 
-1. Learn restQL [query language](/restql/queryLang),
+1. Learn restQL [query language](/restql/query-language.md),
 2. Learn about the [manager and saved queries](/restql/manager),
 3. Get involved and [contribute ツ](/restql/howToContribute)

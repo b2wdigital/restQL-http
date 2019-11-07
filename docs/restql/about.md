@@ -39,7 +39,7 @@ Who're talking about restQL:
 
 ## Next steps
 
-1. Learn restQL [query language](/restql/queryLang),
+1. Learn restQL [query language](/restql/query-language.md),
 2. Get involved :) We're looking for contributors, if you're interested open a Pull Request at our [GitHub Project](https://github.com/B2W-BIT/restQL-http).
 
 ## Help and community
