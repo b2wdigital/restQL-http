@@ -58,7 +58,7 @@ from hero as heroList
     with
         name = search.results.name
 ```
-Learn more about [**restQL** query language](http://docs.restql.b2w.io/#/restql/queryLang)
+Learn more about [**restQL** query language](http://docs.restql.b2w.io/#/restql/query-language)
 
 # Links
 * [Docs](http://docs.restql.b2w.io)
