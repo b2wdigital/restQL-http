@@ -1,7 +1,7 @@
 (ns restql.http.server.handler
   (:require
    [ring.middleware.params :as params]
-   [compojure.core :as compojure :refer [GET ANY POST OPTIONS]]
+   [compojure.core :as compojure :refer [GET ANY POST OPTIONS context]]
    [compojure.route :as route]
    [environ.core :refer [env]]
    [restql.http.server.cors :as cors]
@@ -28,13 +28,14 @@
 
 (def handler
   (-> (compojure/routes
-       (OPTIONS "*"                              [] options)
-       (GET     "/health"                        [] "I'm healthy! :)")
-       (GET     "/resource-status"               [] "Up and running! :)")
-       (ANY     "/run-query/:namespace/:id/:rev" [] query-handler/saved)
-       (ANY     "/run-query"                     [] get-adhoc-behaviour)
-       (POST    "/parse-query"                   [] query-handler/parse)
-       (POST    "/validate-query"                [] query-handler/validate)
-       (route/not-found                          "There is nothing here. =/"))
+        (context (or (env :context-path) "/") []
+          (OPTIONS "/*"                             [] options)
+          (GET     "/health"                        [] "I'm healthy! :)")
+          (GET     "/resource-status"               [] "Up and running! :)")
+          (ANY     "/run-query/:namespace/:id/:rev" [] query-handler/saved)
+          (ANY     "/run-query"                     [] get-adhoc-behaviour)
+          (POST    "/parse-query"                   [] query-handler/parse)
+          (POST    "/validate-query"                [] query-handler/validate)
+          (route/not-found                          "There is nothing here. =/")))
       (wrap-exception-handling)
       (params/wrap-params)))
