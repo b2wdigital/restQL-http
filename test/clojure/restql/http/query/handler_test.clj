@@ -15,6 +15,13 @@
 (defn- contains-many? [m & ks]
   (every? #(contains? m %) ks))
 
+(defn- request [resource handler & params]
+   (handler {:request-method :get :uri resource :params (first params)}))
+
+(deftest test-context-path
+  (testing "When :context-path enviroment variable is set /<context-path>/health should return 200"
+      (is (= 200 (:status (request (str (or (env :context-path) "") "/health") server-handler/handler))))))
+
 (deftest parsing-result-from-request
     (testing "Parse query should work for valid EDN"
       (is
