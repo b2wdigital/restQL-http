@@ -76,7 +76,3 @@
         {:id (:name q)
          :size (:size q)} )
       res)))
-
-(comment
-  (find-all-queries {})
-  (connect! "mongodb://localhost:27017/pdgquery"))
