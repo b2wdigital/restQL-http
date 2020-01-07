@@ -2,7 +2,7 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url  "http://restql.b2w.io"}
-  :dependencies [[b2wdigital/restql-core "3.5.5"]
+  :dependencies [[b2wdigital/restql-core "3.5.6"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/java.classpath "0.3.0"]
@@ -37,7 +37,7 @@
                                  :cache-ttl "30000"
                                  :mappings-cache-ttl "60000"
                                  :cards     "http://api.magicthegathering.io/v1/cards"
-                                 :card      "http://api.magicthegathering.io/v1/cards/:id"
+                                 :card      "http://api.magicthegathering.io/v1/cards/:id?:a"
                                  :planets   "https://swapi.co/api/planets/:id"}
                        :plugins [[lein-cloverage "1.0.9"]]}})
 
