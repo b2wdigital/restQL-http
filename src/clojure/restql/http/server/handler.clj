@@ -28,13 +28,13 @@
 
 (def handler
   (-> (compojure/routes
+       (OPTIONS "*"                              [] options)
        (GET     "/health"                        [] "I'm healthy! :)")
        (GET     "/resource-status"               [] "Up and running! :)")
        (ANY     "/run-query/:namespace/:id/:rev" [] query-handler/saved)
        (ANY     "/run-query"                     [] get-adhoc-behaviour)
        (POST    "/parse-query"                   [] query-handler/parse)
        (POST    "/validate-query"                [] query-handler/validate)
-       (OPTIONS "*"                              [] options)
        (route/not-found                          "There is nothing here. =/"))
       (wrap-exception-handling)
       (params/wrap-params)))
