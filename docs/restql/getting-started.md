@@ -78,4 +78,4 @@ from which you get the response:
 
 1. Learn restQL [query language](/restql/query-language.md),
 2. Learn about the [manager and saved queries](/restql/manager),
-3. Get involved and [contribute ツ](/restql/howToContribute)
+3. Get involved and [contribute ツ](/restql/how-to-contribute)
