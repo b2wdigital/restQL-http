@@ -7,9 +7,9 @@
             [environ.core :refer [env]])
   (:gen-class))
 
-(defn- from-env-or-defaut
+(defn- from-env-or-default
   ([name]
-   (from-env-or-defaut name nil))
+   (from-env-or-default name nil))
   ([name default]
    (cond (contains? env name) (read-string (env name))
          (not (nil? default)) default
@@ -25,7 +25,7 @@
   (db/connect!  (env :mongo-url))
   (plugin/load!)
 
-  (server/start! {:port                    (from-env-or-defaut :port 9000)
-                  :executor-utilization    (from-env-or-defaut :executor-utilization 0.5)
-                  :executor-max-threads    (from-env-or-defaut :executor-max-threads 512)
-                  :executor-control-period (from-env-or-defaut :executor-control-period 1000)}))
+  (server/start! {:port                    (from-env-or-default :port 9000)
+                  :executor-utilization    (from-env-or-default :executor-utilization 0.5)
+                  :executor-max-threads    (from-env-or-default :executor-max-threads 512)
+                  :executor-control-period (from-env-or-default :executor-control-period 1000)}))
