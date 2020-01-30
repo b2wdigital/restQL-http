@@ -79,6 +79,10 @@ Learn more about [**restQL** query language](http://docs.restql.b2w.io/#/restql/
 * [OSDN Mag: マイクロサービスクエリ言語「restQL 2.3」公開](https://mag.osdn.jp/18/01/12/160000)
 * [Build API's w/ GraphQL, RestQL or RESTful?](https://www.youtube.com/watch?v=OeUGswoYrvA)
 
+## To Do
+- [ ] Create endpoints for creating and updating queries and resources.
+- [ ] Implement a *soft cache reset* when queries or resources are created or updated.  
+
 ## License
 
 Copyright © 2016-2019 B2W Digital
