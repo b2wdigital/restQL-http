@@ -80,8 +80,9 @@ Learn more about [**restQL** query language](http://docs.restql.b2w.io/#/restql/
 * [Build API's w/ GraphQL, RestQL or RESTful?](https://www.youtube.com/watch?v=OeUGswoYrvA)
 
 ## To Do
-- [ ] Create endpoints for creating and updating queries and resources.
-- [ ] Implement a *soft cache reset* when queries or resources are created or updated.  
+- [ ] Create endpoints for creating and updating queries and resources ([#178](https://github.com/b2wdigital/restQL-http/issues/178))
+- [ ] Implement a *soft cache reset* when resources are created or updated ([#179](https://github.com/b2wdigital/restQL-http/issues/179))
+- [ ] Unify cache locations in restQL-http ([#180](https://github.com/b2wdigital/restQL-http/issues/180))
 
 ## License
 
