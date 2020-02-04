@@ -1,6 +1,7 @@
 (ns restql.config.core
   (:require [yaml.core :as yaml]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [environ.core :refer [env]]))
 
 (defonce config-data (atom nil))
 
@@ -28,3 +29,11 @@
   ([] @config-data)
   ([configPath]
    (get-in @config-data configPath)))
+
+(defn from-env-or-default
+  ([name]
+   (from-env-or-default name nil))
+  ([name default]
+   (cond (contains? env name) (read-string (env name))
+         (not (nil? default)) default
+         :else nil)))
