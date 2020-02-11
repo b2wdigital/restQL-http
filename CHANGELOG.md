@@ -11,5 +11,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add cache implementation using guava
 - Add CHANGELOG to project
 
-[unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD
-[3.6.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v3.6.0...v3.5.7
+[Unreleased](https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD): https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD
+[3.6.0](https://github.com/olivierlacan/keep-a-changelog/compare/v3.6.0...v3.5.7): https://github.com/olivierlacan/keep-a-changelog/compare/v3.6.0...v3.5.7
