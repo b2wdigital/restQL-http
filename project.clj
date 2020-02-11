@@ -16,7 +16,8 @@
                  [org.flatland/ordered "1.5.7"] ;https://github.com/owainlewis/yaml/issues/28
                  [org.mongodb/mongodb-driver "3.10.1"] ;monger uses mongodb-driver-3.9.1
                  [org.slf4j/slf4j-api "1.7.26"]
-                 [slingshot "0.12.2"]]
+                 [slingshot "0.12.2"]
+                 [com.google.guava/guava "28.2-jre"]]
   :plugins [[lein-autoexpect "1.9.0"]
             [lein-environ "1.1.0"]
             [lein-expectations "0.0.8"]
@@ -38,6 +39,7 @@
                                  :mappings-cache-ttl "60000"
                                  :cards     "http://api.magicthegathering.io/v1/cards"
                                  :card      "http://api.magicthegathering.io/v1/cards/:id?:a"
-                                 :planets   "https://swapi.co/api/planets/:id"}
+                                 :planets   "https://swapi.co/api/planets/:id"
+                                 :mongo-url "mongodb://localhost:27017/restql"}
                        :plugins [[lein-cloverage "1.0.9"]]}})
 
