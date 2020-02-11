@@ -10,8 +10,8 @@
 
 
 <p align="center">
-  <a href="https://travis-ci.org/B2W-BIT/restQL-http" title="restQL on travis-ci">
-    <img src="https://travis-ci.org/B2W-BIT/restQL-http.svg?branch=master" alt="restQL on travis-ci">
+  <a href="https://travis-ci.org/b2wdigital/restQL-http" title="restQL on travis-ci">
+    <img src="https://travis-ci.org/b2wdigital/restQL-http.svg?branch=master" alt="restQL on travis-ci">
   </a>
 </p>
 
@@ -81,7 +81,7 @@ Learn more about [**restQL** query language](http://docs.restql.b2w.io/#/restql/
 
 ## To Do
 - [ ] Create endpoints for creating and updating queries and resources ([#178](https://github.com/b2wdigital/restQL-http/issues/178))
-- [ ] Implement a *soft cache reset* when resources are created or updated ([#179](https://github.com/b2wdigital/restQL-http/issues/179))
+- [X] Implement a *soft cache reset* when resources are created or updated ([#179](https://github.com/b2wdigital/restQL-http/issues/179))
 - [ ] Unify cache locations in restQL-http ([#180](https://github.com/b2wdigital/restQL-http/issues/180))
 
 ## License
